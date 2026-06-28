@@ -423,7 +423,7 @@ export default function SettingsView({
                   const val = e.target.value;
                   setRoundTripDistanceKm(val === '' ? '' : Math.max(0, parseInt(val, 10) || 0));
                 }}
-                placeholder={`e.g. ${deviceLocation.defaultDistanceKm}`}
+                placeholder="e.g. 40"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
                 min="0"
                 max="500"
