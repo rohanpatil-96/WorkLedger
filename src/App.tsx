@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { Preferences } from '@capacitor/preferences';
 import { DayEntry, WorkCategory, UserSettings } from './types';
 import { generateSeedData } from './utils/calculations';
 import { getDanishHolidays } from './utils/holidays';
@@ -82,51 +83,55 @@ export default function App() {
 
   // First boot state populating
   useEffect(() => {
-    // 1. Load or default settings
-    const cachedSettings = localStorage.getItem(SETTINGS_CACHE_KEY);
-    let finalSettings: UserSettings;
+    const loadCachedData = async () => {
+      // 1. Load or default settings
+      const { value: cachedSettings } = await Preferences.get({ key: SETTINGS_CACHE_KEY });
+      let finalSettings: UserSettings;
 
-    if (cachedSettings) {
-      try {
-        finalSettings = JSON.parse(cachedSettings);
-      } catch (err) {
+      if (cachedSettings) {
+        try {
+          finalSettings = JSON.parse(cachedSettings);
+        } catch (err) {
+          finalSettings = getDefaultSettings();
+        }
+      } else {
         finalSettings = getDefaultSettings();
       }
-    } else {
-      finalSettings = getDefaultSettings();
-    }
 
-    // 2. Load or seed entries
-    const cachedEntries = localStorage.getItem(ENTRIES_CACHE_KEY);
-    let finalEntries: DayEntry[] = [];
+      // 2. Load or seed entries
+      const { value: cachedEntries } = await Preferences.get({ key: ENTRIES_CACHE_KEY });
+      let finalEntries: DayEntry[] = [];
 
-    const getFullSeededEntries = (stdHours: number) => {
-      const danfoss = getDanfossEntries();
-      const synthetic2026 = generateSeedData(stdHours);
-      return [...danfoss, ...synthetic2026].sort((a, b) => b.date.localeCompare(a.date));
-    };
+      const getFullSeededEntries = (stdHours: number) => {
+        const danfoss = getDanfossEntries();
+        const synthetic2026 = generateSeedData(stdHours);
+        return [...danfoss, ...synthetic2026].sort((a, b) => b.date.localeCompare(a.date));
+      };
 
-    if (cachedEntries) {
-      try {
-        finalEntries = JSON.parse(cachedEntries);
-      } catch (err) {
+      if (cachedEntries) {
+        try {
+          finalEntries = JSON.parse(cachedEntries);
+        } catch (err) {
+          finalEntries = getFullSeededEntries(finalSettings.standardWorkdayHours);
+        }
+      } else {
+        // Prompt seeded defaults
         finalEntries = getFullSeededEntries(finalSettings.standardWorkdayHours);
       }
-    } else {
-      // Prompt seeded defaults
-      finalEntries = getFullSeededEntries(finalSettings.standardWorkdayHours);
-    }
 
-    setSettings(finalSettings);
-    setEntries(finalEntries);
+      setSettings(finalSettings);
+      setEntries(finalEntries);
 
-    // Save states if empty
-    if (!cachedSettings) {
-      localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(finalSettings));
-    }
-    if (!cachedEntries) {
-      localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(finalEntries));
-    }
+      // Save states if empty
+      if (!cachedSettings) {
+        await Preferences.set({ key: SETTINGS_CACHE_KEY, value: JSON.stringify(finalSettings) });
+      }
+      if (!cachedEntries) {
+        await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify(finalEntries) });
+      }
+    };
+
+    loadCachedData();
   }, []);
 
   // Enforce the unified premium color theme across all devices
@@ -179,59 +184,52 @@ export default function App() {
 
   // --- COMPONENT ACTION DISPATCHERS ---
 
-  const handleSaveEntry = (updatedEntry: DayEntry) => {
-    setEntries((prev) => {
-      // check if date exists
-      const existingIdx = prev.findIndex((e) => e.date === updatedEntry.date);
-      let nextEntries = [...prev];
-      if (existingIdx >= 0) {
-        nextEntries[existingIdx] = updatedEntry;
+  const handleSaveEntry = async (updatedEntry: DayEntry) => {
+    const existingIdx = entries.findIndex((e) => e.date === updatedEntry.date);
+    let nextEntries = [...entries];
+    if (existingIdx >= 0) {
+      nextEntries[existingIdx] = updatedEntry;
+    } else {
+      nextEntries.push(updatedEntry);
+    }
+    nextEntries.sort((a, b) => b.date.localeCompare(a.date));
+    setEntries(nextEntries);
+    await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify(nextEntries) });
+  };
+
+  const handleBulkSaveEntries = async (bulkList: DayEntry[]) => {
+    let nextEntries = [...entries];
+    bulkList.forEach((newE) => {
+      const idx = nextEntries.findIndex((e) => e.date === newE.date);
+      if (idx >= 0) {
+        nextEntries[idx] = newE; // overwrite duplicate
       } else {
-        nextEntries.push(updatedEntry);
+        nextEntries.push(newE);
       }
-      nextEntries.sort((a, b) => b.date.localeCompare(a.date));
-      localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(nextEntries));
-      return nextEntries;
     });
+    nextEntries.sort((a, b) => b.date.localeCompare(a.date));
+    setEntries(nextEntries);
+    await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify(nextEntries) });
   };
 
-  const handleBulkSaveEntries = (bulkList: DayEntry[]) => {
-    setEntries((prev) => {
-      let nextEntries = [...prev];
-      bulkList.forEach((newE) => {
-        const idx = nextEntries.findIndex((e) => e.date === newE.date);
-        if (idx >= 0) {
-          nextEntries[idx] = newE; // overwrite duplicate
-        } else {
-          nextEntries.push(newE);
-        }
-      });
-      nextEntries.sort((a, b) => b.date.localeCompare(a.date));
-      localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(nextEntries));
-      return nextEntries;
-    });
+  const handleDeleteEntry = async (dateToDelete: string) => {
+    const filtered = entries.filter((e) => e.date !== dateToDelete);
+    setEntries(filtered);
+    await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify(filtered) });
   };
 
-  const handleDeleteEntry = (dateToDelete: string) => {
-    setEntries((prev) => {
-      const filtered = prev.filter((e) => e.date !== dateToDelete);
-      localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(filtered));
-      return filtered;
-    });
-  };
-
-  const handleUpdateSettings = (updatedSettings: UserSettings) => {
+  const handleUpdateSettings = async (updatedSettings: UserSettings) => {
     setSettings(updatedSettings);
-    localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(updatedSettings));
+    await Preferences.set({ key: SETTINGS_CACHE_KEY, value: JSON.stringify(updatedSettings) });
   };
 
-  const handleClearAndReseed = () => {
+  const handleClearAndReseed = async () => {
     if (!settings) return;
     const danfoss = getDanfossEntries();
     const synthetic2026 = generateSeedData(settings.standardWorkdayHours);
     const seeded = [...danfoss, ...synthetic2026].sort((a, b) => b.date.localeCompare(a.date));
     setEntries(seeded);
-    localStorage.setItem(ENTRIES_CACHE_KEY, JSON.stringify(seeded));
+    await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify(seeded) });
   };
 
   // Render Loader if first-time load pending
