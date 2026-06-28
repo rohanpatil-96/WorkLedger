@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Lora", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  
+  --color-brand-blue: #3F4E4F; /* Lunar Eclipse as primary brand slate-teal */
+  --color-brand-slate: #2C3639; /* Inkwell as primary deep slate-charcoal */
+  --color-brand-green: #6BCB77;
+  --color-brand-peach: #A27B5B; /* Creme Brulee as primary warm gold/caramel accent */
+  --color-brand-bg: var(--color-bg-base);
+
+  /* Map custom slate color codes to our standard hexes for cohesive, warm-organic rendering across mobile & desktop */
+  --color-slate-50: #FAF8F5; /* Extremely soft ivory/cream */
+  --color-slate-100: #F3EFE9; /* Elegant warm beige */
+  --color-slate-105: #EBE5DB; /* Warm mid beige */
+  --color-slate-200: #DFD7C9; /* Warm linen border */
+  --color-slate-205: #D0C6B5; /* Deep linen border */
+  --color-slate-300: #B8A894; /* Soft warm brown */
+  --color-slate-400: #8C7C6B; /* Muted camel */
+  --color-slate-500: #5C4D3C; /* Dark walnut */
+  --color-slate-505: #5C4D3C;
+  --color-slate-600: #3F4E4F; /* Lunar Eclipse */
+  --color-slate-605: #3F4E4F;
+  --color-slate-655: #2C3639; /* Inkwell */
+  --color-slate-700: #2C3639;
+  --color-slate-705: #2C3639;
+  --color-slate-750: #2C3639;
+  --color-slate-805: #1C2321; /* Ultra deep inkwell */
+}
+
+:root {
+  --color-bg-base: #DCD7C9; /* AU LAIT as overall page background */
+}
+
+/* Force specific colors and font properties universally */
+body {
+  background-color: #DCD7C9 !important;
+  color: #2C3639 !important;
+  font-family: "Plus Jakarta Sans", "Inter", sans-serif !important;
+}
+
+/* Base application container with the elegant Au Lait canvas */
+#main-application-container {
+  background-color: #DCD7C9 !important;
+  min-height: 100vh;
+}
+
+/* Elegant Lora font for all formal headings and title components to give it an inviting yet authoritative feel */
+h1, h2, h3, h4, h5, h6, .font-serif {
+  font-family: "Lora", ui-serif, Georgia, serif !important;
+  font-weight: 600 !important;
+  color: #2C3639 !important;
+}
+
+/* Style cards/windows so they "pop" crisp and white against the warm Au Lait background */
+.bg-white {
+  background-color: #FFFFFF !important;
+  color: #2C3639 !important;
+  border-color: #DFD7C9 !important;
+  box-shadow: 0 4px 20px -2px rgba(44, 54, 57, 0.06), 0 2px 8px -1px rgba(44, 54, 57, 0.04) !important;
+}
+
+/* Quick feedback and form control inputs */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  background-color: #FFFFFF !important;
+  color: #2C3639 !important;
+  border-color: #D0C6B5 !important;
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #A27B5B !important;
+  box-shadow: 0 0 0 3px rgba(162, 123, 91, 0.15) !important;
+}
+
+/* Primary actions and buttons */
+.bg-brand-blue,
+button.bg-brand-blue {
+  background-color: #3F4E4F !important; /* Lunar Eclipse as primary solid action */
+  color: #FAF8F5 !important;
+}
+
+.bg-brand-blue:hover,
+button.bg-brand-blue:hover {
+  background-color: #2C3639 !important; /* Inkwell on hover */
+}
+
+/* Accent badges, progress bars, and highlighted action states */
+.bg-brand-peach,
+button.bg-brand-peach {
+  background-color: #A27B5B !important; /* Creme Brulee as primary warm focus/accent */
+  color: #FAF8F5 !important;
+}
+
+.bg-brand-peach:hover,
+button.bg-brand-peach:hover {
+  background-color: #8C7C6B !important;
+}
+
+/* Clean styling for table headers and specific dividers */
+thead th {
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-size: 10px !important;
+  color: #5C4D3C !important;
+  background-color: #FAF8F5 !important;
+  border-bottom: 2px solid #DFD7C9 !important;
+}
+
+/* Print custom formats for direct high-quality PDF downloads */
+@media print {
+  body, #main-application-container {
+    background-color: #FFFFFF !important;
+    color: #1C2321 !important;
+  }
+  .bg-white {
+    background-color: #FFFFFF !important;
+    box-shadow: none !important;
+    border: 1px solid #DFD7C9 !important;
+  }
+}

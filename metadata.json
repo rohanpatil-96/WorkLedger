@@ -1,0 +1,6 @@
+{
+  "name": "WorkLedger",
+  "description": "A personal Danish workday and hours tracker replacing manual spreadsheets to manage attendance categories, overtime balance, work-from-home counts, and SKAT commute tax deductions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
