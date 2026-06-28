@@ -35,11 +35,20 @@
   --color-bg-base: #DCD7C9; /* AU LAIT as overall page background */
 }
 
-/* Force specific colors and font properties universally */
-body {
+/* Force specific colors and font properties universally with safe area support */
+html, body, #root {
   background-color: #DCD7C9 !important;
   color: #2C3639 !important;
   font-family: "Plus Jakarta Sans", "Inter", sans-serif !important;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+/* Safe area padding helper for top headers */
+.mobile-safe-header {
+  padding-top: calc(1rem + env(safe-area-inset-top, 0px)) !important;
 }
 
 /* Base application container with the elegant Au Lait canvas */

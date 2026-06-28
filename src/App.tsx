@@ -307,7 +307,7 @@ export default function App() {
     <div className="min-h-screen bg-brand-bg text-slate-800 flex flex-col md:flex-row font-sans selection:bg-brand-blue selection:text-white" id="main-application-container">
       
       {/* Mobile Top Header (hidden on desktop) */}
-      <div className="md:hidden bg-brand-slate border-b border-brand-slate p-4 flex justify-between items-center z-30 print:hidden shrink-0">
+      <div className="md:hidden bg-brand-slate border-b border-brand-slate px-4 pb-4 mobile-safe-header flex justify-between items-center z-30 print:hidden shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="p-1 rounded-lg bg-slate-800 border border-slate-700/60 shadow-inner">
             <WorkLedgerLogo className="w-5 h-5" />
