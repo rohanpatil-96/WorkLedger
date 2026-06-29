@@ -307,7 +307,7 @@ export default function App() {
     <div className="min-h-screen bg-brand-bg text-slate-800 flex flex-col md:flex-row font-sans selection:bg-brand-blue selection:text-white" id="main-application-container">
       
       {/* Mobile Top Header (hidden on desktop) */}
-      <div className="md:hidden bg-brand-slate border-b border-brand-slate px-4 flex justify-between items-center z-30 print:hidden shrink-0 capacitor-safe-header">
+      <div className="md:hidden bg-brand-slate border-b border-brand-slate p-4 flex justify-between items-center z-30 print:hidden shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="p-1 rounded-lg bg-slate-800 border border-slate-700/60 shadow-inner">
             <WorkLedgerLogo className="w-5 h-5" />
@@ -316,15 +316,14 @@ export default function App() {
         </div>
         <button
           onClick={() => setMobileMenuOpen(prev => !prev)}
-          className="text-slate-300 hover:text-white p-1 rounded-lg border border-slate-700 font-semibold text-xs flex items-center justify-center"
-          style={{ width: '32px', height: '32px' }}
+          className="text-slate-300 hover:text-white p-1 rounded-lg border border-slate-700 font-semibold"
         >
           {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
       </div>
 
       {/* Navigation Sidebar Drawer */}
-      <aside className={`w-full md:w-64 bg-brand-slate flex flex-col z-20 shrink-0 print:hidden capacitor-safe-aside ${
+      <aside className={`w-full md:w-64 bg-brand-slate flex flex-col z-20 shrink-0 print:hidden ${
         mobileMenuOpen ? 'block' : 'hidden md:flex'
       }`}>
         {/* Brand identity */}
@@ -388,7 +387,7 @@ export default function App() {
       </aside>
 
       {/* Main layout contents area */}
-      <main className="flex-1 overflow-y-auto px-4 py-6 md:p-8 container mx-auto pr-4 print:p-0 print:bg-white print:text-black capacitor-safe-main">
+      <main className="flex-1 overflow-y-auto px-4 py-6 md:p-8 container mx-auto pr-4 print:p-0 print:bg-white print:text-black">
         {/* Dynamic component routing view */}
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Breadcrumb Header for Desktop */}
