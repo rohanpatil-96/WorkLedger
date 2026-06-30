@@ -481,7 +481,7 @@ export default function QuickEntry({
 
       {/* Alert Banner for Unlogged Working Days */}
       {missingWeekdayEntries.length > 0 && (
-        <div className="bg-amber-50 border border-brand-peach/35 text-slate-800 p-4 rounded-xl flex items-start gap-3 shadow-sm animate-fade-in" id="unlogged-days-warning">
+        <div className="bg-amber-50 border border-brand-peach/35 text-slate-805 p-4 rounded-xl flex items-start gap-3 shadow-sm animate-fade-in" id="unlogged-days-warning">
           <AlertTriangle className="w-5 h-5 mt-0.5 text-amber-600 shrink-0" />
           <div className="flex-1">
             <h4 className="font-semibold text-amber-900 text-sm">Unlogged Weekdays Detected</h4>
@@ -515,7 +515,7 @@ export default function QuickEntry({
               </p>
             </div>
             <div className="text-right">
-              <span className="text-xs font-mono text-slate-500 block">{getWeekdayName(date)}</span>
+              <span className="text-xs font-mono text-slate-505 block">{getWeekdayName(date)}</span>
               <span className="text-xs font-semibold bg-brand-blue/10 text-brand-blue px-2.5 py-0.5 rounded font-mono">
                 Week {getWeekNumber(date)}
               </span>
@@ -533,7 +533,7 @@ export default function QuickEntry({
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 font-mono"
+                  className="w-full bg-slate-55 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 font-mono"
                   required
                 />
                 <button
@@ -616,8 +616,6 @@ export default function QuickEntry({
               </div>
             </div>
 
-
-
             {/* Hours input depending on category */}
             {(category === WorkCategory.Office || category === WorkCategory.OtherOffice || category === WorkCategory.WFH) ? (
               <div className="space-y-4 p-4 bg-slate-50/70 rounded-xl border border-slate-200">
@@ -633,7 +631,7 @@ export default function QuickEntry({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-500 mb-1">Exit Time</label>
+                    <label className="block text-[11px] font-semibold text-slate-505 mb-1">Exit Time</label>
                     <input
                       type="time"
                       value={exitTime}
@@ -642,7 +640,7 @@ export default function QuickEntry({
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-500 mb-1">Break Duration (min)</label>
+                    <label className="block text-[11px] font-semibold text-slate-505 mb-1">Break Duration (min)</label>
                     <input
                       type="number"
                       value={breakMinutes}
@@ -653,20 +651,20 @@ export default function QuickEntry({
                   </div>
                 </div>
 
-                <div className="flex border-t border-slate-200/85 pt-3 text-xs justify-between text-slate-500 items-center font-mono font-bold">
+                <div className="flex border-t border-slate-200/85 pt-3 text-xs justify-between text-slate-505 items-center font-mono font-bold">
                   <span>Calculated hours working:</span>
                   <span className="text-slate-800 font-bold">{calculatedHours} hours</span>
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+              <div className="bg-slate-55 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
                 <div className="flex justify-between items-center text-slate-600">
                   <span>Category standard credits:</span>
                   <span className="font-bold text-slate-800">
                     {category === WorkCategory.UnpaidFerie ? '0.0' : `${settings.standardWorkdayHours}`} hours
                   </span>
                 </div>
-                <p className="text-slate-500 text-[10px] leading-relaxed">
+                <p className="text-slate-505 text-[10px] leading-relaxed">
                   For remote or non-working settings, decimal work inputs are computed automatically using standard schedules.
                 </p>
               </div>
@@ -703,7 +701,7 @@ export default function QuickEntry({
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         placeholder={`e.g. ${deviceLocation.majorCities.slice(0, 3).join(', ')}`}
-                        className="w-full bg-white border border-indigo-200 rounded-lg pl-3 pr-8 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                        className="w-full bg-white border border-indigo-200 rounded-lg pl-3 pr-8 py-2.5 text-xs text-slate-805 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                         required
                       />
                       {location && (
@@ -729,10 +727,10 @@ export default function QuickEntry({
             {settings.enableManualOverride && (
               <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-200 space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <label className="block text-xs font-semibold text-slate-605 uppercase tracking-wider">
                     Manual Override (Optional)
                   </label>
-                  <span className="text-[9px] text-slate-500 bg-slate-200 px-2 py-0.5 rounded font-semibold">Enabled in Settings</span>
+                  <span className="text-[9px] text-slate-505 bg-slate-200 px-2 py-0.5 rounded font-semibold">Enabled in Settings</span>
                 </div>
                 <input
                   type="number"
@@ -744,15 +742,15 @@ export default function QuickEntry({
                   min="0"
                   max="24"
                 />
-                <p className="text-[10px] text-slate-400 leading-snug">
+                <p className="text-[10px] text-slate-404 leading-snug">
                   If filled, we bypass calculated values and record this as the total worked hours.
-                  </p>
+                </p>
               </div>
             )}
 
             {/* Notes Section */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-605 uppercase tracking-wider mb-2">
                 Workday Notes / Task Reminders
               </label>
               <div className="relative">
@@ -760,7 +758,7 @@ export default function QuickEntry({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Examples: Aarhus client call, deployment release, tooth treatment, holiday, focus on backend docs."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 min-h-[70px]"
+                  className="w-full bg-slate-55 border border-slate-200 rounded-xl pl-3 pr-8 py-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 min-h-[70px]"
                 />
                 {notes && (
                   <button
@@ -778,16 +776,16 @@ export default function QuickEntry({
             {/* Scoreboard Metrics */}
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex justify-between items-center">
               <div className="space-y-0.5">
-                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
+                <span className="text-[10px] font-semibold text-slate-505 uppercase tracking-wider block">
                   Expected Standard
                 </span>
-                <span className="text-xs font-bold text-slate-700">
+                <span className="text-xs font-bold text-slate-707">
                   {isSelectedWeekend ? '0.0 (Weekend)' : `${settings.standardWorkdayHours} hrs`}
                 </span>
               </div>
               <div className="h-8 w-px bg-slate-200" />
               <div className="space-y-0.5 text-center">
-                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
+                <span className="text-[10px] font-semibold text-slate-505 uppercase tracking-wider block">
                   Counted Work
                 </span>
                 <span className="text-xs font-extrabold text-brand-slate font-mono">
@@ -796,7 +794,7 @@ export default function QuickEntry({
               </div>
               <div className="h-8 w-px bg-slate-200" />
               <div className="space-y-0.5 text-right">
-                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
+                <span className="text-[10px] font-semibold text-slate-505 uppercase tracking-wider block">
                   Overtime impact
                 </span>
                 <span className={`text-xs font-bold font-mono ${
@@ -804,7 +802,7 @@ export default function QuickEntry({
                     ? 'text-brand-green font-bold'
                     : currentOvertime < 0
                     ? 'text-rose-500'
-                    : 'text-slate-500'
+                    : 'text-slate-505'
                 }`}>
                   {currentOvertime >= 0 ? `+${currentOvertime.toFixed(1)}` : `${currentOvertime.toFixed(1)}`} hrs
                 </span>
@@ -830,7 +828,7 @@ export default function QuickEntry({
               <Zap className="text-amber-500 w-4 h-4" />
               <span>Smart Speed Fillers</span>
             </h4>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-505 leading-relaxed">
               Expedite repeated schedules or log a whole week of work with a single click.
             </p>
 
@@ -841,8 +839,8 @@ export default function QuickEntry({
                 className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left p-3 rounded-xl transition text-xs text-slate-700 flex items-center justify-between cursor-pointer"
               >
                 <div className="space-y-0.5">
-                  <span className="font-semibold block text-slate-800">Default Office Hours</span>
-                  <span className="text-[9px] text-slate-400 block font-normal">Fill 08:00 - 16:30 office day</span>
+                  <span className="font-semibold block text-slate-808">Default Office Hours</span>
+                  <span className="text-[9px] text-slate-404 block font-normal">Fill 08:00 - 16:30 office day</span>
                 </div>
                 <span className="text-emerald-700 text-[9px] bg-emerald-500/10 px-2 py-0.5 rounded font-mono font-bold">
                   08:00
@@ -855,8 +853,8 @@ export default function QuickEntry({
                 className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left p-3 rounded-xl transition text-xs text-slate-700 flex items-center justify-between cursor-pointer"
               >
                 <div className="space-y-0.5">
-                  <span className="font-semibold block text-slate-800">Quick-Fill Current Week</span>
-                  <span className="text-[9px] text-slate-400 block font-normal">Bypasses weekends; logs office</span>
+                  <span className="font-semibold block text-slate-808">Quick-Fill Current Week</span>
+                  <span className="text-[9px] text-slate-404 block font-normal">Bypasses weekends; logs office</span>
                 </div>
                 <span className="text-brand-blue text-[9px] bg-brand-blue/10 px-2 py-0.5 rounded font-mono font-bold">
                   WEEK
@@ -871,7 +869,7 @@ export default function QuickEntry({
               <CalendarDays className="text-brand-blue w-4 h-4" />
               <span>Bulk Vacation / Remote</span>
             </h4>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-505 leading-relaxed">
               Away on vacation or taking a parental block? Log multiple business days instantly.
             </p>
             <button
@@ -893,7 +891,7 @@ export default function QuickEntry({
               <h3 className="font-bold text-brand-slate text-base">Bulk Apply Workday Category</h3>
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-extrabold text-sm hover:bg-slate-100 px-2 py-1 rounded-lg"
+                className="text-slate-404 hover:text-slate-655 font-extrabold text-sm hover:bg-slate-100 px-2 py-1 rounded-lg"
               >
                 ✕
               </button>
@@ -902,33 +900,33 @@ export default function QuickEntry({
             <form onSubmit={handleBulkApplyRange} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 mb-1">Start Date</label>
+                  <label className="block text-slate-505 mb-1">Start Date</label>
                   <input
                     type="date"
                     value={bulkStart}
                     onChange={(e) => setBulkStart(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-mono focus:outline-none focus:ring-1 focus:ring-brand-blue"
+                    className="w-full bg-slate-55 border border-slate-200 rounded-lg p-2 text-slate-800 font-mono focus:outline-none focus:ring-1 focus:ring-brand-blue"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 mb-1">End Date</label>
+                  <label className="block text-slate-505 mb-1">End Date</label>
                   <input
                     type="date"
                     value={bulkEnd}
                     onChange={(e) => setBulkEnd(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 font-mono focus:outline-none focus:ring-1 focus:ring-brand-blue"
+                    className="w-full bg-slate-55 border border-slate-200 rounded-lg p-2 text-slate-800 font-mono focus:outline-none focus:ring-1 focus:ring-brand-blue"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1">Select Category</label>
+                <label className="block text-slate-505 mb-1">Select Category</label>
                 <select
                   value={bulkCategory}
                   onChange={(e) => setBulkCategory(e.target.value as WorkCategory)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-blue"
+                  className="w-full bg-slate-55 border border-slate-200 rounded-lg p-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-blue"
                 >
                   {Object.values(WorkCategory).map((cat) => (
                     <option key={cat} value={cat}>
@@ -939,14 +937,14 @@ export default function QuickEntry({
               </div>
 
               <div>
-                <label className="block text-slate-500 mb-1">Notes (Optional)</label>
+                <label className="block text-slate-505 mb-1">Notes (Optional)</label>
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="e.g. Summer vacation Block, Sick spell"
                     value={bulkNotes}
                     onChange={(e) => setBulkNotes(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-2.5 pr-8 py-2 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-brand-blue"
+                    className="w-full bg-slate-55 border border-slate-200 rounded-lg pl-2.5 pr-8 py-2 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-brand-blue"
                   />
                   {bulkNotes && (
                     <button
@@ -961,8 +959,8 @@ export default function QuickEntry({
                 </div>
               </div>
 
-              <div className="bg-amber-50 p-3 rounded-lg border border-brand-peach/20 text-[11px] text-slate-700 leading-relaxed space-y-1">
-                <span className="font-bold text-amber-800 block flex items-center gap-1">
+              <div className="bg-amber-50 p-3 rounded-lg border border-brand-peach/20 text-[11px] text-slate-707 leading-relaxed space-y-1">
+                <span className="font-bold text-amber-808 block flex items-center gap-1">
                   <AlertTriangle className="w-3.5 h-3.5" /> Weekend Filter Applied
                 </span>
                 <span>This range will bypass weekends which reduces unwanted logs. Standard weekdays will be logged at 100% capacity.</span>

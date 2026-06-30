@@ -461,7 +461,7 @@ export default function CalendarView({
                         <div className="flex items-center gap-0.5 md:gap-1 min-w-0">
                           {idx === 0 && (
                             <span 
-                              className="md:hidden text-[9px] font-black font-sans bg-slate-100 text-slate-500 border border-slate-200/50 px-1 py-0.5 rounded select-none tracking-tighter leading-none shrink-0" 
+                              className="md:hidden text-[9px] font-black font-sans bg-slate-100 text-slate-505 border border-slate-200/50 px-1 py-0.5 rounded select-none tracking-tighter leading-none shrink-0" 
                               title={`Week ${week.weekNumber}`}
                             >
                               W{week.weekNumber}
@@ -565,8 +565,8 @@ export default function CalendarView({
                           </div>
                           {dayEntry.location && (
                             <div className="flex justify-between items-center text-[11px]">
-                              <span>Location:</span>
-                              <span className="font-semibold text-indigo-400 truncate max-w-[120px]">{dayEntry.location}</span>
+                                <span>Location:</span>
+                                <span className="font-semibold text-indigo-400 truncate max-w-[120px]">{dayEntry.location}</span>
                             </div>
                           )}
                           {dayEntry.entryTime && (
@@ -723,7 +723,7 @@ export default function CalendarView({
                   <div className="flex justify-between items-start gap-2">
                     <div>
                       <h5 className="font-bold text-slate-800 text-xs leading-snug">{h.name}</h5>
-                      <span className="text-[10.5px] text-slate-500 block font-mono font-semibold uppercase">
+                      <span className="text-[10.5px] text-slate-505 block font-mono font-semibold uppercase">
                         {getWeekdayName(dStr)}, {monthsList[selectedMonth - 1]} {dStr.split('-')[2]} • Week {weekNum}
                       </span>
                     </div>
@@ -825,7 +825,7 @@ export default function CalendarView({
                     <div className="flex justify-between items-start gap-2 mb-1.5">
                       <div>
                         <h5 className="font-bold text-amber-900 text-xs leading-snug">Bridge Day Opportunity</h5>
-                        <span className="text-[10.5px] text-slate-500 block font-mono font-semibold uppercase">
+                        <span className="text-[10.5px] text-slate-505 block font-mono font-semibold uppercase">
                           {getWeekdayName(bridge.date)}, {monthsList[selectedMonth - 1]} {dayNum} • Week {weekNum}
                         </span>
                       </div>
@@ -867,7 +867,7 @@ export default function CalendarView({
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-bold text-brand-slate text-base">Quick Log: {editingDay.dateStr}</h3>
-                <span className="text-[11px] text-slate-500 block font-bold font-mono">{getWeekdayName(editingDay.dateStr)}</span>
+                <span className="text-[11px] text-slate-505 block font-bold font-mono">{getWeekdayName(editingDay.dateStr)}</span>
               </div>
               <button
                 onClick={() => setEditingDay(null)}
@@ -1027,7 +1027,7 @@ export default function CalendarView({
                 <div className="flex border-t border-slate-100 pt-3 flex-col gap-2 text-[11px]" id="delete-entry-section">
                   {!showDeleteConfirm ? (
                     <div className="flex justify-between items-center w-full">
-                      <span className="text-slate-500 font-semibold">Danger Operations:</span>
+                      <span className="text-slate-505 font-semibold">Danger Operations:</span>
                       <button
                         type="button"
                         onClick={() => setShowDeleteConfirm(true)}

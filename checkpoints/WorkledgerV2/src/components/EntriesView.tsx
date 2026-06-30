@@ -192,9 +192,9 @@ export default function EntriesView({
       case WorkCategory.Vacation:
         return 'bg-brand-green/10 text-emerald-800 border border-brand-green/20';
       case WorkCategory.Sick:
-        return 'bg-brand-peach/10 text-amber-800 border border-brand-peach/20';
+        return 'bg-brand-peach/10 text-amber-805 border border-brand-peach/20';
       case WorkCategory.UnpaidFerie:
-        return 'bg-slate-100 text-slate-650 border border-slate-200';
+        return 'bg-slate-100 text-slate-655 border border-slate-200';
       case WorkCategory.OtherOffice:
         return 'bg-indigo-50 text-indigo-700 border border-indigo-200/50';
     }
@@ -434,7 +434,7 @@ export default function EntriesView({
                           <span className="text-slate-400">—</span>
                         )}
                       </td>
-                      <td className="p-4 text-center text-slate-500 font-mono">
+                      <td className="p-4 text-center text-slate-505 font-mono">
                         {isWk ? '0.0' : `${settings.standardWorkdayHours}`} hrs
                       </td>
                       <td className="p-4 text-center font-bold text-slate-800 font-mono text-[13px]">
@@ -500,7 +500,7 @@ export default function EntriesView({
               </div>
               <button
                 onClick={() => setEditingEntry(null)}
-                className="text-slate-400 hover:text-slate-650 font-extrabold bg-slate-55 hover:bg-slate-100 px-3 py-1 rounded-lg"
+                className="text-slate-400 hover:text-slate-655 font-extrabold bg-slate-55 hover:bg-slate-100 px-3 py-1 rounded-lg"
               >
                 ✕
               </button>
@@ -508,7 +508,7 @@ export default function EntriesView({
 
             <form onSubmit={handleEditSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-650 mb-1 font-semibold">Attendance Category</label>
+                <label className="block text-slate-655 mb-1 font-semibold">Attendance Category</label>
                 <select
                   value={editCategory}
                   onChange={(e) => setEditCategory(e.target.value as WorkCategory)}
@@ -525,7 +525,7 @@ export default function EntriesView({
               {(editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) && (
                 <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <div>
-                    <label className="block text-slate-500 mb-1">Entry</label>
+                    <label className="block text-slate-505 mb-1">Entry</label>
                     <input
                       type="time"
                       value={editEntryTime}
@@ -534,7 +534,7 @@ export default function EntriesView({
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-500 mb-1">Exit</label>
+                    <label className="block text-slate-505 mb-1">Exit</label>
                     <input
                       type="time"
                       value={editExitTime}
@@ -543,7 +543,7 @@ export default function EntriesView({
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-500 mb-1">Break (m)</label>
+                    <label className="block text-slate-505 mb-1">Break (m)</label>
                     <input
                       type="number"
                       value={editBreak}
@@ -556,7 +556,7 @@ export default function EntriesView({
 
               {settings.enableManualOverride && (
                 <div>
-                  <label className="block text-slate-500 mb-1 font-semibold font-mono">Manual Override Hours</label>
+                  <label className="block text-slate-505 mb-1 font-semibold font-mono">Manual Override Hours</label>
                   <input
                     type="number"
                     step="0.1"
@@ -569,7 +569,7 @@ export default function EntriesView({
               )}
 
               <div>
-                <label className="block text-slate-500 mb-1 font-semibold">Notes / Comment</label>
+                <label className="block text-slate-505 mb-1 font-semibold">Notes / Comment</label>
                 <div className="relative">
                   <input
                     type="text"
