@@ -276,6 +276,20 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
       {/* Style injection for PDF Print Layout */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
+          /* Force block display on all parent containers of the canvas to respect page margins and breaks */
+          html, body, #root, #main-application-container, main, main > div, #reports-exporting-workspace {
+            display: block !important;
+            position: static !important;
+            overflow: visible !important;
+            height: auto !important;
+            min-height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            filter: none !important;
+            transform: none !important;
+          }
+
           @page {
             size: A4;
             margin-top: 1.3in;
@@ -284,7 +298,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
             margin-right: 0.6in;
           }
 
-          body, #main-application-container {
+          body {
             background-color: #FAF8F5 !important;
             color: #2C3639 !important;
           }
@@ -364,6 +378,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
             font-family: "Plus Jakarta Sans", sans-serif !important;
             font-size: 10px !important;
             border-bottom: 1.5px solid #DFD7C9 !important;
+            padding: 8px 10px !important;
           }
 
           .print-table tbody tr {
@@ -372,6 +387,8 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
 
           .print-table tbody td {
             color: #2C3639 !important;
+            padding: 10px 10px !important;
+            line-height: 1.4 !important;
           }
 
           /* Explicit printed table column sizing for clean alignment */
@@ -380,7 +397,11 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
           .print-table th:nth-child(3), .print-table td:nth-child(3) { width: 10% !important; text-align: center !important; } /* Week */
           .print-table th:nth-child(4), .print-table td:nth-child(4) { width: 16% !important; text-align: center !important; } /* Worked Hours */
           .print-table th:nth-child(5), .print-table td:nth-child(5) { width: 14% !important; text-align: center !important; } /* Overtime */
-          .print-table th:nth-child(6), .print-table td:nth-child(6) { width: 30% !important; } /* Notes */
+          .print-table th:nth-child(6), .print-table td:nth-child(6) { 
+            width: 30% !important; 
+            word-break: break-word !important; 
+            overflow-wrap: break-word !important; 
+          } /* Notes */
 
           .print-table th.text-center, .print-table td.text-center {
             text-align: center !important;
@@ -397,6 +418,11 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
           .print-avoid-break {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
+          }
+
+          .print-page-break {
+            break-after: page !important;
+            page-break-after: always !important;
           }
 
           tr {
@@ -421,10 +447,6 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
             gap: 8px !important;
           }
 
-          /* Page numbering increments automatically in @page */
-          body {
-            counter-reset: page;
-          }
           .print-page-counter::after {
             content: counter(page);
           }
@@ -573,7 +595,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                       <Layers className="w-4 h-4 text-brand-blue" />
                       <span>Detailed Category Counter</span>
                     </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4 print-grid-7">
                       <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60 space-y-1 shadow-xs print-inner-card">
                         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
                           <div className="w-2.5 h-2.5 rounded-full bg-brand-blue shrink-0" />
@@ -646,6 +668,9 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                     </div>
                   </div>
 
+                  {/* Forced page break for clean print layout split */}
+                  <div className="hidden print:block print-page-break" />
+
                 {/* Commute explanation block */}
                 <div className="bg-[#DCD7C9] p-6 rounded-2xl border border-[#DFD7C9] shadow-sm space-y-3 print-inverted-window print-avoid-break font-sans text-[#2C3639]">
                   <div className="text-xs font-bold text-[#2C3639] uppercase tracking-wider flex items-center gap-1.5 font-sans">
@@ -712,7 +737,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                     }, [reportEntries]).map((group) => (
                       <div 
                         key={group.monthNum} 
-                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl p-5 shadow-xs print-inverted-window print-avoid-break space-y-3"
+                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl p-5 shadow-xs print-inverted-window space-y-3"
                       >
                         <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800/60 pb-2">
                           <h5 className="font-semibold text-sm text-brand-slate dark:text-white uppercase tracking-wider print:text-white font-serif">
