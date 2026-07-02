@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { Preferences } from '@capacitor/preferences';
 import { DayEntry, WorkCategory, UserSettings } from './types';
 import { generateSeedData } from './utils/calculations';
@@ -35,6 +35,8 @@ import {
 } from 'lucide-react';
 
 export function WorkLedgerLogo({ className = "w-5 h-5" }: { className?: string }) {
+  const uniqueId = useId();
+  const safeId = `logoGrad-${uniqueId.replace(/:/g, '')}`;
   return (
     <svg 
       viewBox="0 0 24 24" 
@@ -43,14 +45,14 @@ export function WorkLedgerLogo({ className = "w-5 h-5" }: { className?: string }
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={safeId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#A27B5B" />
           <stop offset="100%" stopColor="#3F4E4F" />
         </linearGradient>
       </defs>
       <path 
         d="M12 2L2 7V17L12 22L22 17V7L12 2Z" 
-        fill="url(#logoGrad)" 
+        fill={`url(#${safeId})`} 
         className="opacity-95" 
       />
       <path 
@@ -388,9 +390,12 @@ export default function App() {
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Breadcrumb Header for Desktop */}
           <div className="sticky top-[-2rem] bg-brand-bg pt-8 pb-3.5 z-10 hidden md:flex justify-between items-center border-b border-slate-200 mb-2 print:hidden">
-            <h2 className="text-sm font-extrabold text-slate-800 tracking-tight flex items-center">
-              <span className="text-slate-500 font-semibold mr-1.5">WorkLedger</span>
-              <span className="text-slate-400 font-normal mr-1.5">-</span>
+            <h2 className="text-sm font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+              <div className="p-1 rounded bg-slate-100 border border-slate-200">
+                <WorkLedgerLogo className="w-4 h-4" />
+              </div>
+              <span className="text-slate-500 font-semibold">WorkLedger</span>
+              <span className="text-slate-400 font-normal">-</span>
               <span className="text-brand-blue font-bold">{currentSectionLabel}</span>
             </h2>
             <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded border border-slate-200">ACTIVE TAX RECORD</span>

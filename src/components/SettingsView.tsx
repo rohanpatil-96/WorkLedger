@@ -211,7 +211,7 @@ export default function SettingsView({
             boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3), 0 8px 10px -6px rgba(0,0,0,0.2)' 
           }}
         >
-          <div className="flex-1 font-bold">Preferences saved and applied successfully inside local storage!</div>
+          <div className="flex-1 font-bold">Preferences saved and applied successfully.</div>
           <button 
             type="button" 
             onClick={() => setSaveSuccess(false)}

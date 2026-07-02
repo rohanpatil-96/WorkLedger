@@ -140,7 +140,11 @@ export default function EntriesView({
 
     const isWk = isWeekend(editingEntry.date);
     let calculatedHours = 0;
-    if (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) {
+    if (
+      editCategory === WorkCategory.Office ||
+      editCategory === WorkCategory.OtherOffice ||
+      editCategory === WorkCategory.WFH
+    ) {
       const parts1 = editEntryTime.split(':');
       const parts2 = editExitTime.split(':');
       if (parts1.length === 2 && parts2.length === 2) {
@@ -149,8 +153,6 @@ export default function EntriesView({
         const total = exitMin - entryMin - editBreak;
         calculatedHours = parseFloat((total / 60).toFixed(2));
       }
-    } else if (editCategory === WorkCategory.WFH) {
-      calculatedHours = settings.standardWorkdayHours;
     } else if (editCategory === WorkCategory.UnpaidFerie) {
       calculatedHours = 0;
     } else {
@@ -166,9 +168,9 @@ export default function EntriesView({
     const updated: DayEntry = {
       ...editingEntry,
       category: editCategory,
-      entryTime: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) ? editEntryTime : undefined,
-      exitTime: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) ? editExitTime : undefined,
-      breakMinutes: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) ? editBreak : undefined,
+      entryTime: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) ? editEntryTime : undefined,
+      exitTime: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) ? editExitTime : undefined,
+      breakMinutes: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) ? editBreak : undefined,
       calculatedHours,
       overriddenTotalHours: editOverride !== '' ? parseFloat(editOverride) : undefined,
       finalCountedHours: finalHours,
@@ -522,7 +524,7 @@ export default function EntriesView({
                 </select>
               </div>
 
-              {(editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) && (
+              {(editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) && (
                 <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <div>
                     <label className="block text-slate-500 mb-1">Entry</label>

@@ -34,9 +34,9 @@ export default function CalendarView({
   onSaveEntry,
   onDeleteEntry
 }: CalendarViewProps) {
-  const currentLocalTime = new Date('2026-06-10T20:00:33Z');
-  const [selectedYear, setSelectedYear] = useState<number>(2026);
-  const [selectedMonth, setSelectedMonth] = useState<number>(6); // Default June
+  const currentLocalTime = new Date();
+  const [selectedYear, setSelectedYear] = useState<number>(currentLocalTime.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number>(currentLocalTime.getMonth() + 1);
   const [showWeekends, setShowWeekends] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
@@ -263,7 +263,11 @@ export default function CalendarView({
     const isWk = isWeekend(dateStr);
 
     let calculatedHours = 0;
-    if (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) {
+    if (
+      editCategory === WorkCategory.Office ||
+      editCategory === WorkCategory.OtherOffice ||
+      editCategory === WorkCategory.WFH
+    ) {
       const parseHours = (entry: string, exit: string, brk: number) => {
         const parts1 = entry.split(':');
         const parts2 = exit.split(':');
@@ -274,8 +278,6 @@ export default function CalendarView({
         return parseFloat((total / 60).toFixed(2));
       };
       calculatedHours = parseHours(editEntryTime, editExitTime, editBreak);
-    } else if (editCategory === WorkCategory.WFH) {
-      calculatedHours = settings.standardWorkdayHours;
     } else if (editCategory === WorkCategory.UnpaidFerie) {
       calculatedHours = 0;
     } else {
@@ -299,9 +301,9 @@ export default function CalendarView({
       month: mm,
       year: yyyy,
       category: editCategory,
-      entryTime: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) ? editEntryTime : undefined,
-      exitTime: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) ? editExitTime : undefined,
-      breakMinutes: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) ? editBreak : undefined,
+      entryTime: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) ? editEntryTime : undefined,
+      exitTime: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) ? editExitTime : undefined,
+      breakMinutes: (editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) ? editBreak : undefined,
       calculatedHours,
       overriddenTotalHours: editOverride !== '' ? parseFloat(editOverride) : undefined,
       finalCountedHours: finalHours,
@@ -378,7 +380,7 @@ export default function CalendarView({
             Go to Today
           </button>
           <div className="flex bg-slate-50 p-1 border border-slate-200 rounded-xl text-[10px] font-bold text-slate-500">
-            <span className="px-2 py-0.5 font-mono">JUNE 2026 ACTIVE</span>
+            <span className="px-2 py-0.5 font-mono">{monthsList[selectedMonth - 1].toUpperCase()} {selectedYear} ACTIVE</span>
           </div>
         </div>
       </div>
@@ -442,7 +444,7 @@ export default function CalendarView({
                       onClick={() => handleDayClick(dayStr)}
                       className={`min-h-[85px] md:min-h-[105px] border rounded-2xl p-1.5 sm:p-2 md:p-2.5 transition-all flex flex-col justify-between cursor-pointer group relative min-w-0 overflow-hidden hover:border-brand-blue hover:shadow-md hover:scale-[1.01] ${
                         dayStr === todayStr
-                          ? 'ring-2 ring-brand-blue ring-offset-2 border-brand-blue font-semibold shadow-md'
+                          ? 'ring-2 ring-brand-blue/30 ring-offset-1 border-brand-blue/80 font-semibold shadow-sm'
                           : ''
                       } ${
                         dayEntry
@@ -451,6 +453,8 @@ export default function CalendarView({
                               : getCategoryThemeClass(dayEntry.category))
                           : isBridgeDay
                           ? 'bg-amber-50/50 border-amber-200/90 text-slate-855 shadow-xs'
+                          : dayStr === todayStr
+                          ? (isWk ? 'bg-blue-50/30 border-brand-blue/50 text-slate-655' : 'bg-blue-50/40 border-brand-blue/50 text-slate-655')
                           : isWk
                           ? 'bg-slate-50 border-slate-200 text-slate-400'
                           : 'bg-white border-slate-200 text-slate-655'
@@ -893,7 +897,7 @@ export default function CalendarView({
                 </select>
               </div>
 
-              {(editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice) && (
+              {(editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) && (
                 <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <div>
                     <label className="block text-slate-500 mb-1">In</label>

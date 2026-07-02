@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { DayEntry, WorkCategory, UserSettings, getCategoryDisplayName } from '../types';
-import { calculateCommuteDeduction, isWeekend, getCommuteDistance } from '../utils/calculations';
+import { calculateCommuteDeduction, isWeekend, getCommuteDistance, getWeekNumber } from '../utils/calculations';
 import {
   TrendingUp,
   Briefcase,
@@ -31,10 +31,10 @@ interface DashboardViewProps {
 }
 
 export default function DashboardView({ entries, settings }: DashboardViewProps) {
-  // Use current local time or default consistent simulated active date
-  const currentLocalTime = new Date('2026-06-10T20:00:33Z');
+  // Use current local time
+  const currentLocalTime = new Date();
   const activeYear = currentLocalTime.getFullYear();
-  const activeMonth = currentLocalTime.getMonth() + 1; // June is 6
+  const activeMonth = currentLocalTime.getMonth() + 1;
 
   const [selectedYear, setSelectedYear] = useState<number>(activeYear);
   const [showVisualViews, setShowVisualViews] = useState<boolean>(false);
@@ -50,8 +50,8 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
   const yearOvertimeSum = yearEntries.reduce((acc, e) => acc + e.overtime, 0);
   const monthOvertimeSum = monthEntries.reduce((acc, e) => acc + e.overtime, 0);
 
-  // Current week overtime (Week 24 for June 10, 2026)
-  const currentWeekNum = 24; 
+  // Current week overtime
+  const currentWeekNum = getWeekNumber(currentLocalTime); 
   const weekOvertimeSum = yearEntries
     .filter((e) => e.weekNumber === currentWeekNum)
     .reduce((acc, e) => acc + e.overtime, 0);
@@ -295,7 +295,7 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
       {/* Month Attendance counter box */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
-          Category Counts Breakdown: June 2026 vs Selected Year YTD
+          Category Counts Breakdown: {monthsNames[activeMonth - 1]} {selectedYear} vs Selected Year YTD
         </h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
           <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60 space-y-1">
