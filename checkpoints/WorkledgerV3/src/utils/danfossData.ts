@@ -217,7 +217,7 @@ export function getDanfossEntries(): DayEntry[] {
     // Calculate Overtime
     const isWk = isWeekend(formattedDate);
     
-    // In Rohan's sheet, Fridag, Sygdom, Feriedag, Unpaid Ferie count with 7.4 to match expected total and make overtime 0.
+    // In standard parsed sheets, Fridag, Sygdom, Feriedag, Unpaid Ferie count with 7.4 to match expected total and make overtime 0.
     // If we want exact matches of calculations:
     let finalCountedHours = rawHours;
     let overtime = 0;

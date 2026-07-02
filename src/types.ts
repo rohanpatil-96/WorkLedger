@@ -92,6 +92,7 @@ export interface UserSettings {
   enableManualOverride: boolean;
   preferredYearView: number;
   userName?: string; // customize user's name
+  userEmail?: string; // customize user's email
   activeCompany?: string; // currently active corporate name
   companies?: string[]; // list of tracked corporate entities
   theme?: 'light' | 'dark' | 'system';

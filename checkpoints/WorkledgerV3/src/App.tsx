@@ -146,6 +146,7 @@ export default function App() {
       standardWorkdayHours: 7.4,
       roundTripDistanceKm: '',
       userName: '',
+      userEmail: '',
       activeCompany: '',
       companies: [],
       theme: 'system',

@@ -278,7 +278,7 @@ Your feedback is highly valued. Try out the tool and share your constructive tho
                   Interactive Tester Checklist
                 </h3>
                 <p className="text-xs text-slate-700 font-semibold mt-1">
-                  Help Rohan optimize WorkLedger! Tick off these test scenarios as you explore to ensure 100% functional coverage.
+                  Help optimize WorkLedger! Tick off these test scenarios as you explore to ensure 100% functional coverage.
                 </p>
               </div>
               

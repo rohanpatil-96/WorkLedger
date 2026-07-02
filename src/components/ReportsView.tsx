@@ -464,8 +464,8 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                       <div className="bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200/60 dark:border-slate-800 p-3.5 rounded-xl flex flex-col justify-between print-inverted-window">
                         <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-500 block mb-1">LEDGER SUBJECT</span>
                         <div>
-                          <strong className="text-slate-800 dark:text-white font-bold block text-[13px]">{settings.userName || 'Rohan Patil'}</strong>
-                          <span className="text-slate-500 dark:text-slate-400 block text-[10px] mt-0.5">{settings.userName ? `${settings.userName.toLowerCase().replace(/\s+/g, '')}@gmail.com` : 'rohanpatil96@gmail.com'}</span>
+                          <strong className="text-slate-800 dark:text-white font-bold block text-[13px]">{settings.userName || 'Your Name'}</strong>
+                          <span className="text-slate-500 dark:text-slate-400 block text-[10px] mt-0.5">{settings.userEmail || (settings.userName ? `${settings.userName.toLowerCase().replace(/\s+/g, '')}@email.com` : 'your-email@email.com')}</span>
                         </div>
                       </div>
 

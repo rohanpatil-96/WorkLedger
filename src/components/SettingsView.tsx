@@ -48,6 +48,7 @@ export default function SettingsView({
 
   // User Profile and Company directories
   const [userName, setUserName] = useState<string>(settings.userName || '');
+  const [userEmail, setUserEmail] = useState<string>(settings.userEmail || '');
   const [activeCompany, setActiveCompany] = useState<string>(settings.activeCompany || '');
   const [companies, setCompanies] = useState<string[]>(settings.companies || []);
   const [newCompanyName, setNewCompanyName] = useState<string>('');
@@ -186,6 +187,7 @@ export default function SettingsView({
       taxRates,
       holidays,
       userName,
+      userEmail,
       activeCompany,
       companies,
       theme,
@@ -257,11 +259,27 @@ export default function SettingsView({
                   required
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder="e.g. Rohan Patil"
+                  placeholder="e.g. Your Name"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue/30 text-sm"
                 />
                 <p className="text-[10px] text-slate-505 mt-2">
                   This owner name is printed directly onto dynamic audit statements and tax report declarations.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-2">
+                  Employee / Owner Email Address
+                </label>
+                <input
+                  type="email"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  placeholder="e.g. your-email@email.com"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue/30 text-sm"
+                />
+                <p className="text-[10px] text-slate-505 mt-2">
+                  This email is printed directly onto dynamic audit statements and tax report declarations.
                 </p>
               </div>
 
