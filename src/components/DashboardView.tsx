@@ -224,7 +224,11 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 relative overflow-hidden" id="in-office-days-tax-card">
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/5 rounded-full blur-xl pointer-events-none" />
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">In Office Days (Tax Deductible)</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              In Office Days
+              <br />
+              (Tax Deductible)
+            </span>
             <span className="bg-brand-blue/10 text-brand-blue p-1.5 rounded-lg">
               <Briefcase className="w-4 h-4" />
             </span>
@@ -244,23 +248,23 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
 
         {/* WFH documentation counter */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 relative overflow-hidden" id="wfh-tax-documentation-card">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/5 rounded-full blur-xl pointer-events-none" />
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">WFH Days</span>
-            <span className="bg-teal-500/10 text-teal-600 p-1.5 rounded-lg">
+            <span className="bg-brand-blue/10 text-brand-blue p-1.5 rounded-lg">
               <HomeIcon className="w-4 h-4" />
             </span>
           </div>
           <div>
-            <span className="text-2xl font-extrabold font-mono text-teal-605 tracking-tight block text-teal-600">
+            <span className="text-2xl font-extrabold font-mono text-brand-slate tracking-tight block">
               {mWFH} <span className="text-xs font-normal text-slate-505">days this month</span>
             </span>
             <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mt-1">
-              Year-to-date total: <span className="text-teal-600 font-mono font-bold">{yWFH} days</span>
+              Year-to-date total: <span className="text-brand-blue font-mono font-bold">{yWFH} days</span>
             </span>
           </div>
           <p className="border-t border-slate-100 pt-2 text-[10px] text-slate-505 leading-normal flex items-center gap-1 text-slate-500">
-            <ShieldCheck className="w-3.5 h-3.5 text-teal-500 shrink-0" /> Tracks monthly and YTD WFH counts.
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Tracks monthly and YTD WFH counts.
           </p>
         </div>
 
