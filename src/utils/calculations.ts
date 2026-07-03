@@ -155,6 +155,47 @@ export function generateSeedData(standardHours = 7.4): DayEntry[] {
 
   const currentDate = new Date(start);
 
+  const officeNotes = [
+    "Collaborative team sync and server deployment",
+    "Project status review and local database optimization",
+    "Sprint planning meeting and core development",
+    "On-site performance profiling and client feedback session",
+    "Regular office day, code reviews and pair programming",
+    "Design review and alignment with Danish office colleagues"
+  ];
+
+  const wfhNotes = [
+    "Remote backlog refinement and modularization",
+    "Deep focus on clean code and unit test coverage",
+    "WFH: asynchronous communication and documentation update",
+    "Remote code audit and optimization of calculation utility",
+    "Focus on pending tasks, reduced commute stress"
+  ];
+
+  const vacationNotes = [
+    "Rest and recreation in Jutland",
+    "Summer holiday trip with family",
+    "Extended weekend holiday",
+    "Annual vacation leave"
+  ];
+
+  const sickNotes = [
+    "Mild seasonal cold, resting",
+    "Sore throat and fever, out of office",
+    "Medical checkup and recovery"
+  ];
+
+  const unpaidFerieNotes = [
+    "Unpaid personal leave for travel",
+    "Family event in the countryside",
+    "Personal appointment and study day"
+  ];
+
+  const entryTimes = ["07:30", "07:45", "08:00", "08:15", "08:30", "08:45", "09:00"];
+  const exitTimes = ["15:30", "15:45", "16:00", "16:15", "16:30", "16:45", "17:00", "17:15", "17:30", "17:45"];
+
+  const getRandomElement = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
   while (currentDate <= end) {
     const dateStr = formatDateISO(currentDate);
     const dayOfWeek = currentDate.getUTCDay();
@@ -171,60 +212,43 @@ export function generateSeedData(standardHours = 7.4): DayEntry[] {
     }
 
     let category = WorkCategory.Office;
-    let entryTime = '08:00';
-    let exitTime = '16:30';
+    let entryTime = "08:00";
+    let exitTime = "16:30";
     let breakMin = 30;
     let overriddenHours: number | undefined = undefined;
-    let notes = '';
+    let notes = "";
 
-    // Determine category based on month and date patterns to simulate real logs
     const month = currentDate.getUTCMonth(); // 0 = Jan, 5 = Jun
     const day = currentDate.getUTCDate();
 
     if (holidayName) {
       category = WorkCategory.Holiday;
       notes = `Public Holiday: ${holidayName}`;
-    } else if (month === 1 && day >= 16 && day <= 20) {
-      // Winter vacation in Feb (5 days)
-      category = WorkCategory.Vacation;
-      notes = 'Winter holiday in Denmark';
-    } else if (month === 2 && day === 11) {
-      // Sick day in March
-      category = WorkCategory.Sick;
-      notes = 'Sore throat, stayed in bed';
-    } else if (month === 4 && day >= 11 && day <= 13) {
-      // Unpaid ferie in May (3 days)
-      category = WorkCategory.UnpaidFerie;
-      notes = 'Extended weekend trip (unpaid ferie)';
-    } else if ((month === 3 && day === 8) || (month === 0 && day === 20)) {
-      // Different office location
-      category = WorkCategory.OtherOffice;
-      entryTime = '09:00';
-      exitTime = '17:00';
-      breakMin = 30;
-      notes = 'Aarhus branch visit, clients sessions';
     } else {
-      // regular working days: mixture of Office and WFH
-      // Let's alternate to look organic (e.g. Wed and Thu are WFH, Mon, Tue, Fri are Office)
-      if (dayOfWeek === 3 || dayOfWeek === 4) {
-        category = WorkCategory.WFH;
-        notes = 'Remote working; focus on development backlog';
-      } else {
+      // Generate randomized but plausible categories
+      const rand = Math.random();
+      if (rand < 0.48) {
         category = WorkCategory.Office;
-        // Varied work hours
-        if (day % 7 === 0) {
-          entryTime = '08:00';
-          exitTime = '17:30'; // Long office day, extra overtime
-          notes = 'Quarterly review preparation and deployment';
-        } else if (day % 5 === 0) {
-          entryTime = '08:15';
-          exitTime = '16:15'; // Short office day
-          notes = 'Finished tasks early, commute avoidance';
-        } else {
-          entryTime = '08:00';
-          exitTime = '16:30';
-          notes = 'Standard office day';
-        }
+        entryTime = getRandomElement(entryTimes);
+        exitTime = getRandomElement(exitTimes);
+        notes = getRandomElement(officeNotes);
+      } else if (rand < 0.55) {
+        category = WorkCategory.OtherOffice;
+        entryTime = getRandomElement(entryTimes);
+        exitTime = getRandomElement(exitTimes);
+        notes = "Working from a different regional office in " + getRandomElement(["Aarhus", "Odense", "Aalborg", "Esbjerg"]);
+      } else if (rand < 0.85) {
+        category = WorkCategory.WFH;
+        notes = getRandomElement(wfhNotes);
+      } else if (rand < 0.92) {
+        category = WorkCategory.Vacation;
+        notes = getRandomElement(vacationNotes);
+      } else if (rand < 0.96) {
+        category = WorkCategory.Sick;
+        notes = getRandomElement(sickNotes);
+      } else {
+        category = WorkCategory.UnpaidFerie;
+        notes = getRandomElement(unpaidFerieNotes);
       }
     }
 

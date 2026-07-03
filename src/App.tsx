@@ -82,6 +82,30 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'calendar' | 'entries' | 'reports' | 'settings' | 'pitch'>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Debug Mode state
+  const [debugTaps, setDebugTaps] = useState(0);
+  const [lastTapTime, setLastTapTime] = useState(0);
+  const [isDebugUnlocked, setIsDebugUnlocked] = useState(false);
+  const [showDebugToast, setShowDebugToast] = useState(false);
+
+  const handleDebugTap = () => {
+    if (isDebugUnlocked) return;
+    const now = Date.now();
+    if (now - lastTapTime > 3000) {
+      setDebugTaps(1);
+      setLastTapTime(now);
+    } else {
+      const nextTaps = debugTaps + 1;
+      setLastTapTime(now);
+      setDebugTaps(nextTaps);
+      if (nextTaps >= 5) {
+        setIsDebugUnlocked(true);
+        setShowDebugToast(true);
+        setTimeout(() => setShowDebugToast(false), 4000);
+      }
+    }
+  };
+
   // First boot state populating
   useEffect(() => {
     const loadCachedData = async () => {
@@ -223,8 +247,53 @@ export default function App() {
 
   const handleClearAndReseed = async () => {
     if (!settings) return;
+
+    // Fictional Danish companies
+    const companyPool = [
+      "Nordic Tech Solutions ApS",
+      "Copenhagen Logistics A/S",
+      "Aarhus Digital Group",
+      "Odense Marine Systems",
+      "Baltic Software House",
+      "Danish Wind Innovations",
+      "Kattegat Consulting",
+      "Zealand Cyber Security",
+      "Jutland Robotics ApS"
+    ];
+
+    // Placeholder user profiles
+    const profilePool = [
+      { name: "Mads Hansen", email: "mads.hansen@demo-company.dk" },
+      { name: "Freja Nielsen", email: "freja.nielsen@demo-firm.dk" },
+      { name: "Lars Jensen", email: "lars.jensen@test-enterprise.dk" },
+      { name: "Astrid Møller", email: "astrid.moller@demo-corp.dk" },
+      { name: "Mikkel Poulsen", email: "mikkel.poulsen@demo-solutions.dk" },
+      { name: "Sofie Petersen", email: "sofie.petersen@sandbox-mail.dk" }
+    ];
+
+    // Danish office cities
+    const cityPool = ["Copenhagen", "Aarhus", "Odense", "Aalborg", "Esbjerg"];
+
+    const randomCompany = companyPool[Math.floor(Math.random() * companyPool.length)];
+    const randomProfile = profilePool[Math.floor(Math.random() * profilePool.length)];
+    const randomCity = cityPool[Math.floor(Math.random() * cityPool.length)];
+    const randomCommute = Math.floor(Math.random() * 71) + 10; // 10 to 80 km
+
+    const nextSettings: UserSettings = {
+      ...settings,
+      companies: [randomCompany],
+      activeCompany: randomCompany,
+      userName: randomProfile.name,
+      userEmail: randomProfile.email,
+      defaultOfficeLocationName: randomCity,
+      roundTripDistanceKm: randomCommute
+    };
+
     const synthetic2026 = generateSeedData(settings.standardWorkdayHours);
+    setSettings(nextSettings);
     setEntries(synthetic2026);
+
+    await Preferences.set({ key: SETTINGS_CACHE_KEY, value: JSON.stringify(nextSettings) });
     await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify(synthetic2026) });
   };
 
@@ -280,6 +349,7 @@ export default function App() {
             settings={settings}
             onUpdateSettings={handleUpdateSettings}
             onClearAndReseed={handleClearAndReseed}
+            isDebugUnlocked={isDebugUnlocked}
           />
         );
       case 'pitch':
@@ -363,15 +433,19 @@ export default function App() {
 
          {/* User identification footer */}
          <div className="p-4 border-t border-slate-700/65 bg-black/10 text-xs text-slate-400">
-           <div className="flex items-center gap-2.5 mb-2.5">
+           <div 
+             className="flex items-center gap-2.5 mb-2.5 cursor-pointer active:scale-[0.97] transition-transform select-none"
+             onClick={handleDebugTap}
+             title="Tap 5 times to reveal hidden developer settings"
+           >
              <div className="w-8 h-8 rounded-full bg-brand-blue flex items-center justify-center font-extrabold text-white border border-blue-400/20 font-mono text-xs shadow-sm">
                {(settings.userName || 'Your Name').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
              </div>
              <div className="truncate flex-1">
-               <span className="font-bold text-white block select-none truncate" title={settings.userName || 'Your Name'}>
+               <span className="font-bold text-white block truncate">
                  {settings.userName || 'Your Name'}
                </span>
-               <span className="text-[10px] text-slate-300 font-semibold block truncate" title={settings.activeCompany || 'Your Company'}>
+               <span className="text-[10px] text-slate-300 font-semibold block truncate">
                  {settings.activeCompany || 'Your Company'}
                </span>
              </div>
@@ -401,6 +475,14 @@ export default function App() {
           {renderTabContent()}
         </div>
       </main>
+
+      {/* Developer Settings Unlocked Toast */}
+      {showDebugToast && (
+        <div className="fixed bottom-6 right-6 bg-slate-900 border border-slate-700 text-white font-semibold text-xs px-4 py-3.5 rounded-xl shadow-2xl z-50 flex items-center gap-2.5 animate-bounce select-none">
+          <Sparkles className="w-4.5 h-4.5 text-amber-400 animate-pulse" />
+          <span>Developer Tools unlocked in workday settings!</span>
+        </div>
+      )}
 
     </div>
   );

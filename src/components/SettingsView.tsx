@@ -37,12 +37,14 @@ interface SettingsViewProps {
   settings: UserSettings;
   onUpdateSettings: (settings: UserSettings) => void;
   onClearAndReseed: () => void;
+  isDebugUnlocked?: boolean;
 }
 
 export default function SettingsView({
   settings,
   onUpdateSettings,
-  onClearAndReseed
+  onClearAndReseed,
+  isDebugUnlocked = false
 }: SettingsViewProps) {
   const deviceLocation = React.useMemo(() => detectDeviceLocation(), []);
 
@@ -1210,7 +1212,37 @@ export default function SettingsView({
           </div>
         )}
 
-        {/* Global Action & Seed state */}
+        {/* Developer / Demo Tools gated section */}
+        {isDebugUnlocked && (
+          <div className="bg-amber-500/5 border border-amber-500/20 p-5 rounded-2xl shadow-sm space-y-3.5 animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
+              <div>
+                <h4 className="text-xs font-extrabold text-amber-800 uppercase tracking-wider">Developer & Demo Sandboxing</h4>
+                <p className="text-[10px] text-slate-500 mt-0.5">Simulate rich data environments and verify SKAT calculation compliance metrics.</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('CAUTION: This will clear ALL custom work entries and re-seed the program with simulated logs for 2026. Proceed?')) {
+                    onClearAndReseed();
+                  }
+                }}
+                className="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-amber-300 shadow-sm"
+              >
+                <RotateCcw className="w-4 h-4 text-amber-700" />
+                <span>Clear & Seed Demo Data</span>
+              </button>
+              <div className="text-[9px] text-amber-700/80 font-mono bg-white/60 border border-amber-200 px-2 py-1 rounded-md">
+                Sandbox Mode Active (Settings Override Enabled)
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Global Action & State Configuration */}
         <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center bg-white border border-slate-200 p-5 rounded-2xl gap-4 shadow-sm">
           <div>
             <span className="text-xs font-bold text-brand-slate block">Actions & State Configuration</span>
@@ -1218,19 +1250,6 @@ export default function SettingsView({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                if (confirm('CAUTION: This will clear ALL custom work entries and re-seed the program with simulated logs for 2026. Proceed?')) {
-                  onClearAndReseed();
-                }
-              }}
-              className="bg-slate-50 hover:bg-slate-100 text-xs text-rose-650 font-bold px-4 py-2.5 rounded-xl border border-rose-200 transition flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Clear & Seed Demo Data</span>
-            </button>
-
             <button
               id="save-settings-btn"
               type="submit"

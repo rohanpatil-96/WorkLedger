@@ -210,7 +210,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                   margin: [10, 8, 10, 8],
                   stack: [
                     { text: 'EMPLOYER COMPLIANCE', fontSize: 7, bold: true, color: '#8C7C6B' },
-                    { text: settings.activeCompany || 'Danfoss Power Electronics A/S', fontSize: 10, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: settings.activeCompany || 'Your Company', fontSize: 10, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
                     { text: 'Active Hybrid Work Schema', fontSize: 8, color: '#2E7D32', bold: true }
                   ]
                 },
@@ -642,7 +642,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                       <div className="bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200/60 dark:border-slate-800 p-3.5 rounded-xl flex flex-col justify-between print-inverted-window">
                         <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-500 block mb-1">EMPLOYER COMPLIANCE</span>
                         <div>
-                          <strong className="text-slate-800 dark:text-white font-bold block text-[13px]">{settings.activeCompany || 'Danfoss Power Electronics A/S'}</strong>
+                          <strong className="text-slate-800 dark:text-white font-bold block text-[13px]">{settings.activeCompany || 'Your Company'}</strong>
                           <span className="text-emerald-600 dark:text-emerald-400 font-bold block text-[10px] mt-0.5 flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
                             Active Hybrid Work Schema
