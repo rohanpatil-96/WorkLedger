@@ -23,6 +23,38 @@ import {
   Briefcase
 } from 'lucide-react';
 
+// @ts-ignore
+import pdfMake from 'pdfmake/build/pdfmake';
+// @ts-ignore
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+
+// Register standard fonts
+if (pdfMake && pdfFonts && (pdfFonts as any).pdfMake) {
+  (pdfMake as any).vfs = (pdfFonts as any).pdfMake.vfs;
+  
+  // Configure default and fallback fonts mapped to high-integrity embedded fonts
+  (pdfMake as any).fonts = {
+    Roboto: {
+      normal: 'Roboto-Regular.ttf',
+      bold: 'Roboto-Medium.ttf',
+      italics: 'Roboto-Italic.ttf',
+      bolditalics: 'Roboto-MediumItalic.ttf'
+    },
+    Helvetica: {
+      normal: 'Roboto-Regular.ttf',
+      bold: 'Roboto-Medium.ttf',
+      italics: 'Roboto-Italic.ttf',
+      bolditalics: 'Roboto-MediumItalic.ttf'
+    },
+    Inter: {
+      normal: 'Roboto-Regular.ttf',
+      bold: 'Roboto-Medium.ttf',
+      italics: 'Roboto-Italic.ttf',
+      bolditalics: 'Roboto-MediumItalic.ttf'
+    }
+  };
+}
+
 interface ReportsViewProps {
   entries: DayEntry[];
   settings: UserSettings;
@@ -39,7 +71,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
   // Copy success indicator
   const [copiedStatus, setCopiedStatus] = useState(false);
   const [showChronologicalStatement, setShowChronologicalStatement] = useState<boolean>(false);
-  const [printTipOpen, setPrintTipOpen] = useState<boolean>(false);
+  const [generatingPdf, setGeneratingPdf] = useState<boolean>(false);
 
   // Filter lists based on preferences
   const yearEntries = useMemo(() => {
@@ -133,13 +165,493 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
     });
   };
 
-  const handlePrintPDF = () => {
+  const handlePrintPDF = async () => {
+    if (generatingPdf) return;
+    setGeneratingPdf(true);
     try {
-      window.print();
+      const todayStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      
+      // Group entries by month
+      const groups: { [key: number]: DayEntry[] } = {};
+      reportEntries.forEach((e) => {
+        if (e.category === WorkCategory.Office) {
+          if (!groups[e.month]) {
+            groups[e.month] = [];
+          }
+          groups[e.month].push(e);
+        }
+      });
+
+      const sortedMonths = Object.keys(groups)
+        .map(Number)
+        .sort((a, b) => a - b);
+
+      const logoBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABDRJREFUeNrsW0tIVFEY/u7cuZpRx6fNSGrYIrMsiB70gCByU6KFrbSptgYtIor6uCgKWrSpFrVoU6SgRURgYVpYmE9S0gKDCgqS6CHmI8fRnGvufNuf6R0u88v99Y6XmQMf97vce8/3/9/zn/88BvM8D5FIpGZ0fGcoS8mZ6n/pWb8y72gXn2m5qGvIq9F7U9fS+TqfVf18826t0X2uBexzLfB6IqP4I/X5ZidgDqO0b3L7m9fV+vWpXq71H3oFvF4YxR9gA8g2zKEMKUNuAnmHOSm77qQz263fPZ98g087ZAnvYAnvYAnvYBm/gQ1gg89u1Ocb7pPPluC0Anf/vS34O8g0vD72Bf62X86+7WbyV3ZqO16b9B42gY2A7v3/gW8nLwD8H8K3gA0X2IAdwI7C9G3F9pP0bSc6fRux/T9iH5A+ID6g7Y9bZp9t0b+pZ0f07pbeW3B76Z7M6/4p2EHYM+xX6S/XpDukRcoZ9WvI6A9gh/CfoD9AnpA9M+/Owf478iT7ZpWdF97rI63PZ/xzsT9f3f9D3mKz6XqR7X/XzkZex4fXpE7g9AuwUth/7E/R/YIegO7AnZfcfon9In9j682C/T+bFv9fnt/X/Wfo39S/o79N76N+m9e/3+R3k1vQf9An8+9G97nSvn6Efhv96t6Z7XffvYF/Zrf3R+r/X/XvYv6E/rO89T96G7vXN6n/F/gn7/P8Z8iH2N9P9F7s13fv3Uf4C9r9P/mSffmXon+XvAOfnTwV/uO/Y/TfdfpE/M9fE9fA/fw/dw8mXzR19/9fXfW0XgL8WfL9VfiD+9UvCXP7fVf26of/7WfG3oF9/Z7eD6j9zRzV9sNf9N/L/U8b2N/XF9r+veHfoGfV/072A+z6XvA6W/i9CH7p+l3gS34O8g0vD72Bf62X86+7WbyV3ZqO16b9B42gY2A7v3/gW8nLwD8H8K3gA0X2IAdwI7C9G3F9pP0bSc6fRux/T9iH5A+ID6g7Y9bZp9t0b+pZ0f07pbeW3B76Z7M6/4p2EHYM+xX6S/XpDukRcoZ9WvI6A9gh/CfoD9AnpA9M+/Owf478iT7ZpWdF97rI63PZ/xzsT9f3f9D3mKz6XqR7X/XzkZex4fXpE7g9AuwUth/7E/R/YIegO7AnZfcfon9In9j682C/T+bFv9fnt/X/Wfo39S/o79N76N+m9e/3+R3k1vQf9An8+9G97nSvn6Efhv96t6Z7XffvYF/Zrf3R+r/X/XvYv6E/rO89T96G7vXN6n/F/gn7/P8Z8iH2N9P9F7s13fv3Uf4C9r9P/mSffmXon+XvAOfnTwV/uO/Y/TfdfpE/M9fE9fA/fw/dw8mXzR19/9fXfW0XgL8WfL9VfiD+9UvCXP7fVf26of/7WfG3oF9/Z7eD6j9zRzV9sNf9N/L/U8b2N/XF9r+veHfoGfV/072A+z6XvA6W/i9CH7p+l3gS34O/g8DAAfh8C/w7+Evv/F/jL7XN2aovfPtfP+7R3926Wf7yO387/b/B3kCnjfRsf/2Zp3+T2N6+r9etTvVzrP/QKeL0wiD/ABpBtmEMZf6A+//6v4G/vD8YIeEEM+AvsS+mP0B8A7A8I/F5sH6A/Qf8Z/Ff/v6Y+m06C36T6fFf9F/Xv2H9N/Y7f/B6+O9+m9T//A/M/AP8D4EegP7EfgS7/fwH7mfoO+XvAfvC7sS3A/+T//g8A+F8AmFvOfsAAAAAElFTkSuQmCC';
+
+      // Set standard font definitions (Helvetica is mapped to high-integrity TrueType fonts in VFS)
+      (pdfMake as any).fonts = {
+        Roboto: {
+          normal: 'Roboto-Regular.ttf',
+          bold: 'Roboto-Medium.ttf',
+          italics: 'Roboto-Italic.ttf',
+          bolditalics: 'Roboto-MediumItalic.ttf'
+        },
+        Helvetica: {
+          normal: 'Roboto-Regular.ttf',
+          bold: 'Roboto-Medium.ttf',
+          italics: 'Roboto-Italic.ttf',
+          bolditalics: 'Roboto-MediumItalic.ttf'
+        },
+        Inter: {
+          normal: 'Roboto-Regular.ttf',
+          bold: 'Roboto-Medium.ttf',
+          italics: 'Roboto-Italic.ttf',
+          bolditalics: 'Roboto-MediumItalic.ttf'
+        }
+      };
+
+      const content: any[] = [
+        {
+          text: 'Official Ledger & Audit Trail'.toUpperCase(),
+          fontSize: 9,
+          bold: true,
+          color: '#A27B5B', // brand-peach
+          margin: [0, 0, 0, 4]
+        },
+        {
+          text: 'Denmark Workday Hours & Commute Log',
+          fontSize: 18,
+          bold: true,
+          color: '#3F4E4F', // brand-blue
+          margin: [0, 0, 0, 4]
+        },
+        {
+          text: [
+            { text: 'Statement Timeframe: ', fontSize: 10, color: '#64748B' },
+            { text: reportType === 'monthly' ? `${monthsNames[selectedMonth - 1]} ${selectedYear}` : `Full Calendar ${selectedYear}`, fontSize: 10, bold: true, color: '#2C3639' }
+          ],
+          margin: [0, 0, 0, 15]
+        },
+        // User Info Table
+        {
+          table: {
+            widths: ['*', '*', '*'],
+            dontBreakRows: true,
+            body: [
+              [
+                {
+                  fillColor: '#F8FAFC', // slate-50
+                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'], // slate-200
+                  border: [true, true, true, true],
+                  margin: [10, 8, 10, 8],
+                  stack: [
+                    { text: 'LEDGER SUBJECT', fontSize: 8, bold: true, color: '#64748B' },
+                    { text: settings.userName || 'Your Name', fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: settings.userEmail || (settings.userName ? `${settings.userName.toLowerCase().replace(/\s+/g, '')}@email.com` : 'your-email@email.com'), fontSize: 9, color: '#64748B' }
+                  ]
+                },
+                {
+                  fillColor: '#F8FAFC', // slate-50
+                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  border: [true, true, true, true],
+                  margin: [10, 8, 10, 8],
+                  stack: [
+                    { text: 'EMPLOYER COMPLIANCE', fontSize: 8, bold: true, color: '#64748B' },
+                    { text: settings.activeCompany || 'Danfoss Power Electronics A/S', fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Active Hybrid Work Schema', fontSize: 9, color: '#16A34A', bold: true }
+                  ]
+                },
+                {
+                  fillColor: '#F8FAFC', // slate-50
+                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  border: [true, true, true, true],
+                  margin: [10, 8, 10, 8],
+                  stack: [
+                    { text: 'REGULATORY SCHEME', fontSize: 8, bold: true, color: '#64748B' },
+                    { text: 'SKAT (Danish Tax Agency)', fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Section 9 C (Befordringsfradrag)', fontSize: 9, color: '#A27B5B', bold: true }
+                  ]
+                }
+              ]
+            ]
+          },
+          layout: {
+            hLineWidth: () => 1,
+            vLineWidth: () => 1,
+            hLineColor: () => '#E2E8F0',
+            vLineColor: () => '#E2E8F0'
+          },
+          margin: [0, 0, 0, 15]
+        },
+        // Summary Cards Table
+        {
+          table: {
+            widths: ['*', '*', '*', '*'],
+            dontBreakRows: true,
+            body: [
+              [
+                {
+                  fillColor: '#F8FAFC', // slate-50
+                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  border: [true, true, true, true],
+                  margin: [8, 8, 8, 8],
+                  stack: [
+                    { text: 'TOTAL HOURS', fontSize: 8, bold: true, color: '#64748B' },
+                    { text: `${totalHoursCounted.toFixed(2)} hrs`, fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Total hours counted', fontSize: 8, color: '#64748B' }
+                  ]
+                },
+                {
+                  fillColor: '#F8FAFC',
+                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  border: [true, true, true, true],
+                  margin: [8, 8, 8, 8],
+                  stack: [
+                    { text: 'OVERTIME SUMMARY', fontSize: 8, bold: true, color: '#64748B' },
+                    { text: `${overtimeSumValue >= 0 ? '+' : ''}${overtimeSumValue.toFixed(2)} hrs`, fontSize: 12, bold: true, color: overtimeSumValue >= 0 ? '#16A34A' : '#EF4444', margin: [0, 4, 0, 2] },
+                    { text: 'Overtime balance', fontSize: 8, color: '#64748B' }
+                  ]
+                },
+                {
+                  fillColor: '#F8FAFC',
+                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  border: [true, true, true, true],
+                  margin: [8, 8, 8, 8],
+                  stack: [
+                    { text: 'ELIGIBLE SKAT DAYS', fontSize: 8, bold: true, color: '#64748B' },
+                    { text: `${commuteDaysCount} days`, fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Eligible office days', fontSize: 8, color: '#64748B' }
+                  ]
+                },
+                {
+                  fillColor: '#F8FAFC',
+                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  border: [true, true, true, true],
+                  margin: [8, 8, 8, 8],
+                  stack: [
+                    { text: 'EST. SKAT DEDUCTION', fontSize: 8, bold: true, color: '#64748B' },
+                    { text: `${estimatedDeductionSum.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DKK`, fontSize: 11, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Estimated deduction', fontSize: 8, color: '#64748B' }
+                  ]
+                }
+              ]
+            ]
+          },
+          layout: {
+            hLineWidth: () => 1,
+            vLineWidth: () => 1,
+            hLineColor: () => '#E2E8F0',
+            vLineColor: () => '#E2E8F0'
+          },
+          margin: [0, 0, 0, 15]
+        },
+        // Detailed Category Counter Block
+        {
+          stack: [
+            { text: 'DETAILED CATEGORY COUNTER', fontSize: 9, bold: true, color: '#3F4E4F', margin: [0, 0, 0, 6] },
+            {
+              table: {
+                widths: ['*', '*', '*', '*', '*', '*', '*'],
+                dontBreakRows: true,
+                body: [
+                  [
+                    { 
+                      text: [
+                        { text: '● ', color: '#3B82F6', fontSize: 8 }, 
+                        { text: 'Office', color: '#64748B' }
+                      ], 
+                      fontSize: 8, 
+                      bold: true, 
+                      alignment: 'center', 
+                      fillColor: '#F8FAFC' 
+                    },
+                    { 
+                      text: [
+                        { text: '● ', color: '#14B8A6', fontSize: 8 }, 
+                        { text: 'WFH', color: '#64748B' }
+                      ], 
+                      fontSize: 8, 
+                      bold: true, 
+                      alignment: 'center', 
+                      fillColor: '#F8FAFC' 
+                    },
+                    { 
+                      text: [
+                        { text: '● ', color: '#6366F1', fontSize: 8 }, 
+                        { text: 'Diff Branch', color: '#64748B' }
+                      ], 
+                      fontSize: 8, 
+                      bold: true, 
+                      alignment: 'center', 
+                      fillColor: '#F8FAFC' 
+                    },
+                    { 
+                      text: [
+                        { text: '● ', color: '#22C55E', fontSize: 8 }, 
+                        { text: 'Vacation', color: '#64748B' }
+                      ], 
+                      fontSize: 8, 
+                      bold: true, 
+                      alignment: 'center', 
+                      fillColor: '#F8FAFC' 
+                    },
+                    { 
+                      text: [
+                        { text: '● ', color: '#A27B5B', fontSize: 8 }, 
+                        { text: 'Sick Day', color: '#64748B' }
+                      ], 
+                      fontSize: 8, 
+                      bold: true, 
+                      alignment: 'center', 
+                      fillColor: '#F8FAFC' 
+                    },
+                    { 
+                      text: [
+                        { text: '● ', color: '#F43F5E', fontSize: 8 }, 
+                        { text: 'Holiday', color: '#64748B' }
+                      ], 
+                      fontSize: 8, 
+                      bold: true, 
+                      alignment: 'center', 
+                      fillColor: '#F8FAFC' 
+                    },
+                    { 
+                      text: [
+                        { text: '● ', color: '#64748B', fontSize: 8 }, 
+                        { text: 'Unpaid', color: '#64748B' }
+                      ], 
+                      fontSize: 8, 
+                      bold: true, 
+                      alignment: 'center', 
+                      fillColor: '#F8FAFC' 
+                    }
+                  ],
+                  [
+                    { text: `${officeDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
+                    { text: `${wfhDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
+                    { text: `${otherOfficeDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
+                    { text: `${vacationDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
+                    { text: `${sickDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
+                    { text: `${holidaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
+                    { text: `${unpaidCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' }
+                  ]
+                ]
+              },
+              layout: {
+                hLineWidth: (i: number) => (i === 0 || i === 2) ? 1 : 0.5,
+                vLineWidth: () => 0.5,
+                hLineColor: () => '#E2E8F0',
+                vLineColor: () => '#E2E8F0'
+              }
+            }
+          ],
+          margin: [0, 0, 0, 15]
+        },
+        // Commute tax calculation method
+        {
+          fillColor: '#F1F5F9', // slate-100
+          table: {
+            widths: ['*'],
+            dontBreakRows: true,
+            body: [
+              [
+                {
+                  margin: [12, 10, 12, 10],
+                  stack: [
+                    { text: 'COMMUTE TAX CALCULATION METHOD (DANISH SKAT RULES)', fontSize: 9, bold: true, color: '#3F4E4F', margin: [0, 0, 0, 6] },
+                    { 
+                      text: [
+                        { text: 'The commute deduction estimate is calculated dynamically based on Danish tax laws for ', italic: true },
+                        { text: `${selectedYear}`, bold: true, italic: false },
+                        { text: ' for high-integrity audit logs:', italic: true }
+                      ],
+                      fontSize: 9.5, 
+                      color: '#334155', 
+                      margin: [0, 0, 0, 6] 
+                    },
+                    {
+                      ul: [
+                        [
+                          { text: 'Default Office (', italic: true },
+                          { text: settings.defaultOfficeLocationName || 'Default Office Location', bold: true, italic: false },
+                          { text: ') round-trip distance checked is: ', italic: true },
+                          { text: `${settings.roundTripDistanceKm} km`, bold: true, italic: false },
+                          { text: '.', italic: true }
+                        ],
+                        [
+                          { text: 'First ', italic: true },
+                          { text: '24 km', bold: true, italic: false },
+                          { text: ' of any commute gets no refund. Deductible distance: ', italic: true },
+                          { text: `${Math.max(0, Number(settings.roundTripDistanceKm || 0) - 24)} km`, bold: true, italic: false },
+                          { text: ' / default commuter day.', italic: true }
+                        ],
+                        [
+                          { text: 'Portion ', italic: true },
+                          { text: '25 - 120 km', bold: true, italic: false },
+                          { text: ' rate is: ', italic: true },
+                          { text: `${activeTaxSetting.rate1} DKK/km`, bold: true, italic: false },
+                          { text: '.', italic: true }
+                        ],
+                        [
+                          { text: 'Portion above ', italic: true },
+                          { text: '120 km', bold: true, italic: false },
+                          { text: ' rate is: ', italic: true },
+                          { text: `${activeTaxSetting.rate2} DKK/km`, bold: true, italic: false },
+                          { text: '.', italic: true }
+                        ],
+                        [
+                          { text: 'Different office locations: Included dynamically if enabled in settings, using their specific round-trip distances.', italic: true }
+                        ],
+                        [
+                          { text: 'Exclusions: Saturdays/Sundays, Sick spells, Vacation, non-commute remote locations, and Work-from-Home days.', italic: true }
+                        ]
+                      ],
+                      fontSize: 9.5,
+                      color: '#334155'
+                    }
+                  ]
+                }
+              ]
+            ]
+          },
+          layout: {
+            hLineWidth: () => 1,
+            vLineWidth: () => 1,
+            hLineColor: () => '#E2E8F0',
+            vLineColor: () => '#E2E8F0'
+          },
+          margin: [0, 0, 0, 15]
+        },
+        // Force break to start the table on page 2
+        { text: '', pageBreak: 'before' },
+        { text: 'Chronological Statement of Workdays (Office Commutes Only)'.toUpperCase(), fontSize: 11, bold: true, color: '#3F4E4F', margin: [0, 0, 0, 10], keepWithNext: true }
+      ];
+
+      // Add monthly tables
+      if (sortedMonths.length === 0) {
+        content.push({
+          text: 'No office commute entries recorded in the selected timeframe.',
+          fontSize: 9.5,
+          italic: true,
+          alignment: 'center',
+          margin: [0, 20, 0, 20]
+        } as any);
+      } else {
+        sortedMonths.forEach((m) => {
+          const monthName = monthsNames[m - 1];
+          const groupEntries = groups[m].sort((a, b) => a.date.localeCompare(b.date));
+
+          content.push({
+            keepTogether: true,
+            stack: [
+              {
+                columns: [
+                  { text: `${monthName.toUpperCase()} ${selectedYear}`, fontSize: 11, bold: true, color: '#3F4E4F' },
+                  { text: `${groupEntries.length} office ${groupEntries.length === 1 ? 'day' : 'days'}`, fontSize: 9, bold: true, color: '#64748B', alignment: 'right' }
+                ],
+                margin: [0, 10, 0, 6]
+              },
+              {
+                table: {
+                  headerRows: 1,
+                  dontBreakRows: true,
+                  widths: ['15%', '13%', '8%', '16%', '12%', '*'],
+                  body: [
+                    [
+                      { text: 'Date', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F' },
+                      { text: 'Weekday', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F' },
+                      { text: 'Week', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F', alignment: 'center' },
+                      { text: 'Worked Hours', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F', alignment: 'center' },
+                      { text: 'Overtime', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F', alignment: 'center' },
+                      { text: 'Notes', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F' }
+                    ],
+                    ...groupEntries.map((e) => {
+                      const otColor = e.overtime > 0 ? '#16A34A' : e.overtime < 0 ? '#EF4444' : '#94A3B8';
+                      const otText = e.overtime >= 0 ? `+${e.overtime.toFixed(2)}` : e.overtime.toFixed(2);
+                      return [
+                        { text: e.date, fontSize: 9.5, color: '#2C3639', bold: true },
+                        { text: e.weekday, fontSize: 9.5, color: '#2C3639', bold: true },
+                        { text: `W${e.weekNumber}`, fontSize: 9.5, color: '#2C3639', bold: true, alignment: 'center' },
+                        { text: `${e.finalCountedHours.toFixed(2)} hrs`, fontSize: 9.5, color: '#2C3639', bold: true, alignment: 'center' },
+                        { text: otText, fontSize: 9.5, color: otColor, bold: true, alignment: 'center' },
+                        { text: e.notes || '—', fontSize: 9.5, color: '#334155', italic: true }
+                      ];
+                    })
+                  ]
+                },
+                layout: {
+                  hLineWidth: function(i: number, node: any) { return (i === 0 || i === 1 || i === node.table.body.length) ? 1 : 0.5; },
+                  vLineWidth: () => 0,
+                  hLineColor: (i: number) => i === 1 ? '#3F4E4F' : '#E2E8F0'
+                },
+                margin: [0, 0, 0, 15]
+              }
+            ]
+          } as any);
+        });
+      }
+
+      const docDefinition: any = {
+        pageSize: 'A4',
+        pageMargins: [40, 50, 40, 50],
+        defaultStyle: {
+          font: 'Helvetica'
+        },
+        header: function(currentPage: number) {
+          if (currentPage === 1) return null;
+          return {
+            margin: [40, 20, 40, 0],
+            stack: [
+              {
+                columns: [
+                  {
+                    image: logoBase64,
+                    width: 16,
+                    height: 16
+                  },
+                  { 
+                    text: 'OFFICIAL TIME & COMMUTE LEDGER', 
+                    alignment: 'right', 
+                    fontSize: 9, 
+                    color: '#3F4E4F', 
+                    bold: true,
+                    margin: [0, 2, 0, 0]
+                  }
+                ]
+              },
+              {
+                canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 0.5, strokeColor: '#E2E8F0' }]
+              }
+            ]
+          };
+        },
+        footer: function(currentPage: number, pageCount: number) {
+          return {
+            margin: [40, 10, 40, 20],
+            stack: [
+              {
+                canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, strokeColor: '#E2E8F0' }]
+              },
+              {
+                margin: [0, 5, 0, 0],
+                columns: [
+                  { text: `Generated by WorkLedger Denmark • Report Date: ${todayStr}`, fontSize: 8, italic: true, color: '#64748B' },
+                  { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right', fontSize: 8, color: '#64748B' }
+                ]
+              }
+            ]
+          };
+        },
+        content: content
+      };
+
+      const filename = `danish_workdays_report_${reportType}_${selectedYear}${reportType === 'monthly' ? '_' + selectedMonth : ''}.pdf`;
+      pdfMake.createPdf(docDefinition).download(filename);
     } catch (e) {
-      console.error('Print trigger error:', e);
+      console.error('PDF generation error:', e);
+    } finally {
+      setGeneratingPdf(false);
     }
-    setPrintTipOpen(true);
   };
 
   const monthsNames = [
@@ -237,282 +749,32 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
 
         <button
           onClick={handlePrintPDF}
-          className="bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition text-left text-xs group shadow-sm"
+          disabled={generatingPdf}
+          className={`bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition text-left text-xs group shadow-sm ${generatingPdf ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           <div className="p-2.5 rounded-xl bg-brand-peach/10 text-amber-700 group-hover:bg-brand-peach/20 transition">
-            <Printer className="w-5 h-5" />
+            <Printer className={`w-5 h-5 ${generatingPdf ? 'animate-spin' : ''}`} />
           </div>
           <div>
-            <span className="font-bold text-brand-slate block">Print PDF Statement</span>
-            <span className="text-[10px] text-slate-505">Pre-styled tax audit page</span>
+            <span className="font-bold text-brand-slate block">
+              {generatingPdf ? 'Generating PDF...' : 'Print PDF Statement'}
+            </span>
+            <span className="text-[10px] text-slate-505">
+              {generatingPdf ? 'Assembling document...' : 'Pre-styled tax audit page'}
+            </span>
           </div>
         </button>
       </div>
 
-      {/* Style injection for PDF Print Layout */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        /* Screen styling rules for repeating layout */
-        .print-report-table {
-          width: 100%;
-          border-collapse: collapse;
-          border: none;
-        }
-        .print-report-table thead {
-          display: none;
-        }
-        .print-report-table tfoot {
-          display: none;
-        }
-
-        /* Screen-only overrides to ensure high-visibility Inkwell (#2C3639) colors */
-        .print-table tbody td.col-inkwell {
-          color: #2C3639 !important;
-        }
-        html.dark .print-table tbody td.col-inkwell {
-          color: #F1F5F9 !important;
-        }
-        .print-table tbody td.col-olive,
-        .print-table tbody td .col-olive {
-          color: #73825E !important;
-        }
-        html.dark .print-table tbody td.col-olive,
-        html.dark .print-table tbody td .col-olive {
-          color: #8A9A76 !important;
-        }
-
-        @media print {
-          html, body {
-            overflow: visible !important;
-            height: auto !important;
-          }
-
-          .print-report-table, .print-report-table * {
-            overflow: visible !important;
-            transform: none !important;
-          }
-
-          .print-report-table {
-            width: 100% !important;
-            border-collapse: collapse !important;
-            border: none !important;
-          }
-
-          .print-report-table thead {
-            display: table-header-group !important;
-          }
-
-          .print-report-table tfoot {
-            display: table-footer-group !important;
-          }
-
-          /* Force block display on all parent containers of the canvas to respect page margins and breaks */
-          html, body, #root, #main-application-container, main, main > div, #reports-exporting-workspace {
-            display: block !important;
-            position: static !important;
-            overflow: visible !important;
-            height: auto !important;
-            min-height: auto !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            filter: none !important;
-            transform: none !important;
-          }
-
-          @page {
-            size: A4;
-            margin-top: 1.3in;
-            margin-bottom: 1.0in;
-            margin-left: 0.6in;
-            margin-right: 0.6in;
-          }
-
-          body {
-            background-color: #FAF8F5 !important;
-            color: #2C3639 !important;
-          }
-
-          /* Force high-integrity background graphics printing */
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          /* Hide Screen Only, config panel, dropdowns, and export buttons */
-          .print\\:hidden, 
-          #reports-exporting-workspace > div:first-child, 
-          #reports-quick-actions-bar, 
-          #reports-print-assistance-button {
-            display: none !important;
-          }
-
-          /* Remove outside boundary of report canvas */
-          #printable-auditable-report-canvas {
-            border: none !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-
-          /* Premium Inverted Style for Windows/Cards */
-          .print-inverted-window {
-            background-color: #FAF8F5 !important;
-            color: #2C3639 !important;
-            border: 1px solid #DFD7C9 !important;
-            box-shadow: none !important;
-            border-radius: 12px !important;
-            padding: 18px !important;
-            margin-bottom: 18px !important;
-          }
-
-          /* Inner cards */
-          .print-inner-card {
-            background-color: #F3EFE9 !important;
-            border-color: #DFD7C9 !important;
-            color: #2C3639 !important;
-          }
-
-          /* Text colors on print */
-          .print-text-primary {
-            color: #2C3639 !important;
-          }
-          
-          .print-text-accent {
-            color: #A27B5B !important;
-          }
-
-          .print-text-neutral {
-            color: #5C4D3C !important;
-          }
-
-          .print-text-muted {
-            color: #8C7C6B !important;
-          }
-
-          /* Table inside printed windows */
-          .print-table {
-            background-color: transparent !important;
-            color: #2C3639 !important;
-            width: 100% !important;
-            border-collapse: collapse !important;
-            table-layout: fixed !important;
-          }
-
-          .print-table thead tr {
-            background-color: #F3EFE9 !important;
-            border-bottom: 1.5px solid #DFD7C9 !important;
-          }
-
-          .print-table thead th {
-            background-color: #F3EFE9 !important;
-            color: #2C3639 !important;
-            font-family: "Plus Jakarta Sans", sans-serif !important;
-            font-size: 10px !important;
-            border-bottom: 1.5px solid #DFD7C9 !important;
-            padding: 8px 10px !important;
-          }
-
-          .print-table tbody tr {
-            border-bottom: 1px solid #F3EFE9 !important;
-          }
-
-          .print-table tbody td {
-            color: #2C3639 !important;
-            padding: 10px 10px !important;
-            line-height: 1.4 !important;
-          }
-
-          /* Explicit printed table column sizing for clean alignment */
-          .print-table th:nth-child(1), .print-table td:nth-child(1) { width: 16% !important; } /* Date */
-          .print-table th:nth-child(2), .print-table td:nth-child(2) { width: 14% !important; } /* Weekday */
-          .print-table th:nth-child(3), .print-table td:nth-child(3) { width: 10% !important; text-align: center !important; } /* Week */
-          .print-table th:nth-child(4), .print-table td:nth-child(4) { width: 16% !important; text-align: center !important; } /* Worked Hours */
-          .print-table th:nth-child(5), .print-table td:nth-child(5) { width: 14% !important; text-align: center !important; } /* Overtime */
-          .print-table th:nth-child(6), .print-table td:nth-child(6) { 
-            width: 30% !important; 
-            word-break: break-word !important; 
-            overflow-wrap: break-word !important; 
-          } /* Notes */
-
-          .print-table th.text-center, .print-table td.text-center {
-            text-align: center !important;
-          }
-
-          .print-overtime-positive {
-            color: #6BCB77 !important;
-          }
-
-          .print-overtime-negative {
-            color: #EF4444 !important;
-          }
-
-          .print-avoid-break {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
-          }
-
-          .print-page-break {
-            break-after: page !important;
-            page-break-after: always !important;
-          }
-
-          tr {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
-          }
-
-          /* Retain beautiful grids in print viewport width */
-          .print-grid-3 {
-            display: grid !important;
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-            gap: 12px !important;
-          }
-          .print-grid-4 {
-            display: grid !important;
-            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-            gap: 12px !important;
-          }
-          .print-grid-7 {
-            display: grid !important;
-            grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
-            gap: 8px !important;
-          }
-        }
-      ` }} />
-
       {/* Printable Report Canvas Frame */}
       <div
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm space-y-7 print:bg-transparent print:p-0 print:border-none print:shadow-none print:space-y-6"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm space-y-7"
         id="printable-auditable-report-canvas"
       >
-        <table className="print-report-table w-full border-collapse border-none">
-          <thead>
-            <tr>
-              <td className="p-0 border-none">
-                <div className="hidden print:flex justify-between items-center border-b border-[#2C3639]/10 pb-3 mb-6" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-[#2C3639] flex items-center justify-center text-[#DCD7C9] font-bold">
-                      <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" fill="#DCD7C9" />
-                        <path d="M8 9H16M8 13H13" stroke="#2C3639" strokeWidth="1.8" strokeLinecap="round" />
-                      </svg>
-                    </div>
-                    <span className="font-bold text-sm tracking-tight text-[#2C3639]">WorkLedger</span>
-                  </div>
-                  <span className="text-[10px] text-[#A27B5B] font-mono tracking-widest uppercase">Official Time & Commute Ledger</span>
-                </div>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="p-0 border-none">
-                <div className="space-y-7 print:space-y-6">
-                        {/* Premium Title & Details Workspace Header */}
-                  <div className="border-b border-slate-200 dark:border-slate-800 pb-6 print-avoid-break">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-                      <div className="space-y-1.5">
+        <div className="space-y-7">
+          <div className="border-b border-slate-200 dark:border-slate-800 pb-6">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+              <div className="space-y-1.5">
                         <span className="text-xs font-semibold text-brand-peach uppercase tracking-wider block">
                           Official Ledger & Audit Trail
                         </span>
@@ -842,60 +1104,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                   </div>
                 </div>
               </div>
-            </td>
-          </tr>
-        </tbody>
-          <tfoot>
-            <tr>
-              <td className="p-0 border-none">
-                <div className="hidden print:flex justify-between items-center border-t border-[#2C3639]/10 pt-3 mt-6" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-                  <span className="italic text-[9px] text-[#8C7C6B]">
-                    Generated by WorkLedger Denmark • Report Date: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </span>
-                </div>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-      {/* PDF Print Assistance Overlay Modal */}
-      {printTipOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/85 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in print:hidden">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4 animate-scale-up text-xs">
-            <div className="flex items-center gap-2.5 text-brand-blue dark:text-brand-peach">
-              <Printer className="w-5 h-5 shrink-0" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">PDF Print Workspace Tips</h3>
             </div>
-            
-            <div className="space-y-3 text-slate-700 dark:text-slate-200 leading-relaxed">
-              <p>
-                Because this application is currently rendered in an <strong>interactive live iframe</strong>, different browsers restrict direct printer triggers for security reasons.
-              </p>
-              <div className="bg-slate-50 dark:bg-slate-800/65 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/65 space-y-2">
-                <span className="font-bold text-slate-900 dark:text-white block text-[11px] uppercase tracking-wide">Quick 2-Step Safe Print:</span>
-                <ol className="list-decimal pl-4 space-y-1.5 font-medium text-slate-600 dark:text-slate-300">
-                  <li>Click the <strong className="text-brand-blue">"Open App in New Tab"</strong> icon in the top right header of your preview workspace.</li>
-                  <li>Click <strong>Print PDF Statement</strong> there. Your native browser print options panel will load immediately for high-resolution storage or paper saving.</li>
-                </ol>
-              </div>
-              <p className="text-[10px] text-slate-450 dark:text-slate-500 italic">
-                Pro-tip: In the print dialog, specify "Save as PDF" as destination and enable "Background Graphics" for standard colors.
-              </p>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => setPrintTipOpen(false)}
-                className="px-4 py-2 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold rounded-xl transition cursor-pointer text-center select-none"
-              >
-                Understood, Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

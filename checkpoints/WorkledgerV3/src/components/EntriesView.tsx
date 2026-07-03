@@ -213,7 +213,7 @@ export default function EntriesView({
               <span>Historical Working Logs</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Currently displaying <strong className="text-slate-800 font-semibold">{filteredEntries.length}</strong> logged work records
+              Currently displaying <strong className="text-slate-805 font-bold font-mono text-[13px]">{filteredEntries.length}</strong> logged work records
             </p>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
@@ -366,7 +366,7 @@ export default function EntriesView({
           </div>
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400">Record count matched</span>
-            <span className="text-base font-extrabold text-slate-800 block">{totals.count} entries</span>
+            <span className="text-base font-extrabold text-slate-800 block font-mono">{totals.count} entries</span>
           </div>
         </div>
 

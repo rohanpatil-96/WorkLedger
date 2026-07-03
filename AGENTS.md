@@ -3,8 +3,8 @@
 ## Version Checkpoints
 
 ### WorkledgerV3 (Latest Checked-In Build)
-- **Status**: Stable, tested, with updated commute warning, dynamic current-date seed generation, and customized brand logo colors.
-- **Date Saved**: 2026-07-01
+- **Status**: Stable, tested, with updated commute warning, dynamic current-date seed generation, customized brand logo colors, high-visibility report column styling (Inkwell #2C3639 for table columns), and week number format (e.g. W2, W17).
+- **Date Saved**: 2026-07-03
 - **Files Stored**:
   - `/checkpoints/WorkledgerV3/index.html`
   - `/checkpoints/WorkledgerV3/package.json`

@@ -49,7 +49,9 @@ export default function SettingsView({
   // User Profile and Company directories
   const [userName, setUserName] = useState<string>(settings.userName || '');
   const [userEmail, setUserEmail] = useState<string>(settings.userEmail || '');
-  const [activeCompany, setActiveCompany] = useState<string>(settings.activeCompany || '');
+  const [activeCompany, setActiveCompany] = useState<string>(
+    settings.activeCompany || (settings.companies && settings.companies.length > 0 ? settings.companies[0] : '')
+  );
   const [companies, setCompanies] = useState<string[]>(settings.companies || []);
   const [newCompanyName, setNewCompanyName] = useState<string>('');
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(settings.theme || 'system');
@@ -188,7 +190,7 @@ export default function SettingsView({
       holidays,
       userName,
       userEmail,
-      activeCompany,
+      activeCompany: activeCompany || (companies.length > 0 ? companies[0] : ''),
       companies,
       theme,
       differentOfficeLocations
@@ -327,8 +329,12 @@ export default function SettingsView({
                     onClick={() => {
                       const trimmed = newCompanyName.trim();
                       if (trimmed && !companies.includes(trimmed)) {
-                        setCompanies([...companies, trimmed]);
+                        const updatedCompanies = [...companies, trimmed];
+                        setCompanies(updatedCompanies);
                         setNewCompanyName('');
+                        if (!activeCompany || companies.length === 0) {
+                          setActiveCompany(trimmed);
+                        }
                       }
                     }}
                     className="bg-brand-blue hover:bg-blue-600 text-white font-bold px-4 rounded-xl transition cursor-pointer text-xs shrink-0"

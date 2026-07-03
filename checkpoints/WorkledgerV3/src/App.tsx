@@ -175,10 +175,7 @@ export default function App() {
       },
       enableManualOverride: true,
       preferredYearView: 2026,
-      differentOfficeLocations: [
-        { id: 'loc-b', name: 'Aarhus Office', roundTripDistanceKm: 60, includeInCommute: true },
-        { id: 'loc-remote', name: 'Odense Remote Office', roundTripDistanceKm: 0, includeInCommute: false }
-      ],
+      differentOfficeLocations: [],
       defaultOfficeLocationName: ''
     };
   };
