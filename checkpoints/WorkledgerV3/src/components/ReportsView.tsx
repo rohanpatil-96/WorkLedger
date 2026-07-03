@@ -31,28 +31,6 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 // Register standard fonts
 if (pdfMake && pdfFonts && (pdfFonts as any).pdfMake) {
   (pdfMake as any).vfs = (pdfFonts as any).pdfMake.vfs;
-  
-  // Configure default and fallback fonts mapped to high-integrity embedded fonts
-  (pdfMake as any).fonts = {
-    Roboto: {
-      normal: 'Roboto-Regular.ttf',
-      bold: 'Roboto-Medium.ttf',
-      italics: 'Roboto-Italic.ttf',
-      bolditalics: 'Roboto-MediumItalic.ttf'
-    },
-    Helvetica: {
-      normal: 'Roboto-Regular.ttf',
-      bold: 'Roboto-Medium.ttf',
-      italics: 'Roboto-Italic.ttf',
-      bolditalics: 'Roboto-MediumItalic.ttf'
-    },
-    Inter: {
-      normal: 'Roboto-Regular.ttf',
-      bold: 'Roboto-Medium.ttf',
-      italics: 'Roboto-Italic.ttf',
-      bolditalics: 'Roboto-MediumItalic.ttf'
-    }
-  };
 }
 
 interface ReportsViewProps {
@@ -186,49 +164,25 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
         .map(Number)
         .sort((a, b) => a - b);
 
-      const logoBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABDRJREFUeNrsW0tIVFEY/u7cuZpRx6fNSGrYIrMsiB70gCByU6KFrbSptgYtIor6uCgKWrSpFrVoU6SgRURgYVpYmE9S0gKDCgqS6CHmI8fRnGvufNuf6R0u88v99Y6XmQMf97vce8/3/9/zn/88BvM8D5FIpGZ0fGcoS8mZ6n/pWb8y72gXn2m5qGvIq9F7U9fS+TqfVf18826t0X2uBexzLfB6IqP4I/X5ZidgDqO0b3L7m9fV+vWpXq71H3oFvF4YxR9gA8g2zKEMKUNuAnmHOSm77qQz263fPZ98g087ZAnvYAnvYAnvYBm/gQ1gg89u1Ocb7pPPluC0Anf/vS34O8g0vD72Bf62X86+7WbyV3ZqO16b9B42gY2A7v3/gW8nLwD8H8K3gA0X2IAdwI7C9G3F9pP0bSc6fRux/T9iH5A+ID6g7Y9bZp9t0b+pZ0f07pbeW3B76Z7M6/4p2EHYM+xX6S/XpDukRcoZ9WvI6A9gh/CfoD9AnpA9M+/Owf478iT7ZpWdF97rI63PZ/xzsT9f3f9D3mKz6XqR7X/XzkZex4fXpE7g9AuwUth/7E/R/YIegO7AnZfcfon9In9j682C/T+bFv9fnt/X/Wfo39S/o79N76N+m9e/3+R3k1vQf9An8+9G97nSvn6Efhv96t6Z7XffvYF/Zrf3R+r/X/XvYv6E/rO89T96G7vXN6n/F/gn7/P8Z8iH2N9P9F7s13fv3Uf4C9r9P/mSffmXon+XvAOfnTwV/uO/Y/TfdfpE/M9fE9fA/fw/dw8mXzR19/9fXfW0XgL8WfL9VfiD+9UvCXP7fVf26of/7WfG3oF9/Z7eD6j9zRzV9sNf9N/L/U8b2N/XF9r+veHfoGfV/072A+z6XvA6W/i9CH7p+l3gS34O8g0vD72Bf62X86+7WbyV3ZqO16b9B42gY2A7v3/gW8nLwD8H8K3gA0X2IAdwI7C9G3F9pP0bSc6fRux/T9iH5A+ID6g7Y9bZp9t0b+pZ0f07pbeW3B76Z7M6/4p2EHYM+xX6S/XpDukRcoZ9WvI6A9gh/CfoD9AnpA9M+/Owf478iT7ZpWdF97rI63PZ/xzsT9f3f9D3mKz6XqR7X/XzkZex4fXpE7g9AuwUth/7E/R/YIegO7AnZfcfon9In9j682C/T+bFv9fnt/X/Wfo39S/o79N76N+m9e/3+R3k1vQf9An8+9G97nSvn6Efhv96t6Z7XffvYF/Zrf3R+r/X/XvYv6E/rO89T96G7vXN6n/F/gn7/P8Z8iH2N9P9F7s13fv3Uf4C9r9P/mSffmXon+XvAOfnTwV/uO/Y/TfdfpE/M9fE9fA/fw/dw8mXzR19/9fXfW0XgL8WfL9VfiD+9UvCXP7fVf26of/7WfG3oF9/Z7eD6j9zRzV9sNf9N/L/U8b2N/XF9r+veHfoGfV/072A+z6XvA6W/i9CH7p+l3gS34O/g8DAAfh8C/w7+Evv/F/jL7XN2aovfPtfP+7R3926Wf7yO387/b/B3kCnjfRsf/2Zp3+T2N6+r9etTvVzrP/QKeL0wiD/ABpBtmEMZf6A+//6v4G/vD8YIeEEM+AvsS+mP0B8A7A8I/F5sH6A/Qf8Z/Ff/v6Y+m06C36T6fFf9F/Xv2H9N/Y7f/B6+O9+m9T//A/M/AP8D4EegP7EfgS7/fwH7mfoO+XvAfvC7sS3A/+T//g8A+F8AmFvOfsAAAAAElFTkSuQmCC';
-
-      // Set standard font definitions (Helvetica is mapped to high-integrity TrueType fonts in VFS)
-      (pdfMake as any).fonts = {
-        Roboto: {
-          normal: 'Roboto-Regular.ttf',
-          bold: 'Roboto-Medium.ttf',
-          italics: 'Roboto-Italic.ttf',
-          bolditalics: 'Roboto-MediumItalic.ttf'
-        },
-        Helvetica: {
-          normal: 'Roboto-Regular.ttf',
-          bold: 'Roboto-Medium.ttf',
-          italics: 'Roboto-Italic.ttf',
-          bolditalics: 'Roboto-MediumItalic.ttf'
-        },
-        Inter: {
-          normal: 'Roboto-Regular.ttf',
-          bold: 'Roboto-Medium.ttf',
-          italics: 'Roboto-Italic.ttf',
-          bolditalics: 'Roboto-MediumItalic.ttf'
-        }
-      };
-
       const content: any[] = [
         {
           text: 'Official Ledger & Audit Trail'.toUpperCase(),
-          fontSize: 9,
+          fontSize: 8,
           bold: true,
-          color: '#A27B5B', // brand-peach
+          color: '#A27B5B',
           margin: [0, 0, 0, 4]
         },
         {
           text: 'Denmark Workday Hours & Commute Log',
           fontSize: 18,
           bold: true,
-          color: '#3F4E4F', // brand-blue
+          color: '#2C3639',
           margin: [0, 0, 0, 4]
         },
         {
           text: [
-            { text: 'Statement Timeframe: ', fontSize: 10, color: '#64748B' },
-            { text: reportType === 'monthly' ? `${monthsNames[selectedMonth - 1]} ${selectedYear}` : `Full Calendar ${selectedYear}`, fontSize: 10, bold: true, color: '#2C3639' }
+            { text: 'Statement Timeframe: ', fontSize: 9, color: '#8C7C6B' },
+            { text: reportType === 'monthly' ? `${monthsNames[selectedMonth - 1]} ${selectedYear}` : `Full Calendar ${selectedYear}`, fontSize: 9, bold: true, color: '#2C3639' }
           ],
           margin: [0, 0, 0, 15]
         },
@@ -236,40 +190,39 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
         {
           table: {
             widths: ['*', '*', '*'],
-            dontBreakRows: true,
             body: [
               [
                 {
-                  fillColor: '#F8FAFC', // slate-50
-                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'], // slate-200
+                  fillColor: '#FAF8F5',
+                  borderColor: ['#DFD7C9', '#DFD7C9', '#DFD7C9', '#DFD7C9'],
                   border: [true, true, true, true],
                   margin: [10, 8, 10, 8],
                   stack: [
-                    { text: 'LEDGER SUBJECT', fontSize: 8, bold: true, color: '#64748B' },
-                    { text: settings.userName || 'Your Name', fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
-                    { text: settings.userEmail || (settings.userName ? `${settings.userName.toLowerCase().replace(/\s+/g, '')}@email.com` : 'your-email@email.com'), fontSize: 9, color: '#64748B' }
+                    { text: 'LEDGER SUBJECT', fontSize: 7, bold: true, color: '#8C7C6B' },
+                    { text: settings.userName || 'Your Name', fontSize: 10, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: settings.userEmail || (settings.userName ? `${settings.userName.toLowerCase().replace(/\s+/g, '')}@email.com` : 'your-email@email.com'), fontSize: 8, color: '#8C7C6B' }
                   ]
                 },
                 {
-                  fillColor: '#F8FAFC', // slate-50
-                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  fillColor: '#FAF8F5',
+                  borderColor: ['#DFD7C9', '#DFD7C9', '#DFD7C9', '#DFD7C9'],
                   border: [true, true, true, true],
                   margin: [10, 8, 10, 8],
                   stack: [
-                    { text: 'EMPLOYER COMPLIANCE', fontSize: 8, bold: true, color: '#64748B' },
-                    { text: settings.activeCompany || 'Danfoss Power Electronics A/S', fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
-                    { text: 'Active Hybrid Work Schema', fontSize: 9, color: '#16A34A', bold: true }
+                    { text: 'EMPLOYER COMPLIANCE', fontSize: 7, bold: true, color: '#8C7C6B' },
+                    { text: settings.activeCompany || 'Danfoss Power Electronics A/S', fontSize: 10, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Active Hybrid Work Schema', fontSize: 8, color: '#2E7D32', bold: true }
                   ]
                 },
                 {
-                  fillColor: '#F8FAFC', // slate-50
-                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  fillColor: '#FAF8F5',
+                  borderColor: ['#DFD7C9', '#DFD7C9', '#DFD7C9', '#DFD7C9'],
                   border: [true, true, true, true],
                   margin: [10, 8, 10, 8],
                   stack: [
-                    { text: 'REGULATORY SCHEME', fontSize: 8, bold: true, color: '#64748B' },
-                    { text: 'SKAT (Danish Tax Agency)', fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
-                    { text: 'Section 9 C (Befordringsfradrag)', fontSize: 9, color: '#A27B5B', bold: true }
+                    { text: 'REGULATORY SCHEME', fontSize: 7, bold: true, color: '#8C7C6B' },
+                    { text: 'SKAT (Danish Tax Agency)', fontSize: 10, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Section 9 C (Befordringsfradrag)', fontSize: 8, color: '#A27B5B', bold: true }
                   ]
                 }
               ]
@@ -278,8 +231,8 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
           layout: {
             hLineWidth: () => 1,
             vLineWidth: () => 1,
-            hLineColor: () => '#E2E8F0',
-            vLineColor: () => '#E2E8F0'
+            hLineColor: () => '#DFD7C9',
+            vLineColor: () => '#DFD7C9'
           },
           margin: [0, 0, 0, 15]
         },
@@ -287,51 +240,50 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
         {
           table: {
             widths: ['*', '*', '*', '*'],
-            dontBreakRows: true,
             body: [
               [
                 {
-                  fillColor: '#F8FAFC', // slate-50
-                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  fillColor: '#FAF8F5',
+                  borderColor: ['#DFD7C9', '#DFD7C9', '#DFD7C9', '#DFD7C9'],
                   border: [true, true, true, true],
                   margin: [8, 8, 8, 8],
                   stack: [
-                    { text: 'TOTAL HOURS', fontSize: 8, bold: true, color: '#64748B' },
-                    { text: `${totalHoursCounted.toFixed(2)} hrs`, fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
-                    { text: 'Total hours counted', fontSize: 8, color: '#64748B' }
+                    { text: 'TOTAL HOURS', fontSize: 7, bold: true, color: '#8C7C6B' },
+                    { text: `${totalHoursCounted.toFixed(2)} hrs`, fontSize: 11, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Total hours counted', fontSize: 7, color: '#8C7C6B' }
                   ]
                 },
                 {
-                  fillColor: '#F8FAFC',
-                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  fillColor: '#FAF8F5',
+                  borderColor: ['#DFD7C9', '#DFD7C9', '#DFD7C9', '#DFD7C9'],
                   border: [true, true, true, true],
                   margin: [8, 8, 8, 8],
                   stack: [
-                    { text: 'OVERTIME SUMMARY', fontSize: 8, bold: true, color: '#64748B' },
-                    { text: `${overtimeSumValue >= 0 ? '+' : ''}${overtimeSumValue.toFixed(2)} hrs`, fontSize: 12, bold: true, color: overtimeSumValue >= 0 ? '#16A34A' : '#EF4444', margin: [0, 4, 0, 2] },
-                    { text: 'Overtime balance', fontSize: 8, color: '#64748B' }
+                    { text: 'OVERTIME SUMMARY', fontSize: 7, bold: true, color: '#8C7C6B' },
+                    { text: `${overtimeSumValue >= 0 ? '+' : ''}${overtimeSumValue.toFixed(2)} hrs`, fontSize: 11, bold: true, color: overtimeSumValue >= 0 ? '#73825E' : '#C62828', margin: [0, 4, 0, 2] },
+                    { text: 'Overtime balance', fontSize: 7, color: '#8C7C6B' }
                   ]
                 },
                 {
-                  fillColor: '#F8FAFC',
-                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  fillColor: '#FAF8F5',
+                  borderColor: ['#DFD7C9', '#DFD7C9', '#DFD7C9', '#DFD7C9'],
                   border: [true, true, true, true],
                   margin: [8, 8, 8, 8],
                   stack: [
-                    { text: 'ELIGIBLE SKAT DAYS', fontSize: 8, bold: true, color: '#64748B' },
-                    { text: `${commuteDaysCount} days`, fontSize: 12, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
-                    { text: 'Eligible office days', fontSize: 8, color: '#64748B' }
+                    { text: 'ELIGIBLE SKAT DAYS', fontSize: 7, bold: true, color: '#8C7C6B' },
+                    { text: `${commuteDaysCount} days`, fontSize: 11, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Eligible office days', fontSize: 7, color: '#8C7C6B' }
                   ]
                 },
                 {
-                  fillColor: '#F8FAFC',
-                  borderColor: ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#E2E8F0'],
+                  fillColor: '#FAF8F5',
+                  borderColor: ['#DFD7C9', '#DFD7C9', '#DFD7C9', '#DFD7C9'],
                   border: [true, true, true, true],
                   margin: [8, 8, 8, 8],
                   stack: [
-                    { text: 'EST. SKAT DEDUCTION', fontSize: 8, bold: true, color: '#64748B' },
-                    { text: `${estimatedDeductionSum.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DKK`, fontSize: 11, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
-                    { text: 'Estimated deduction', fontSize: 8, color: '#64748B' }
+                    { text: 'EST. SKAT DEDUCTION', fontSize: 7, bold: true, color: '#8C7C6B' },
+                    { text: `${estimatedDeductionSum.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DKK`, fontSize: 10, bold: true, color: '#2C3639', margin: [0, 4, 0, 2] },
+                    { text: 'Estimated deduction', fontSize: 7, color: '#8C7C6B' }
                   ]
                 }
               ]
@@ -340,108 +292,44 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
           layout: {
             hLineWidth: () => 1,
             vLineWidth: () => 1,
-            hLineColor: () => '#E2E8F0',
-            vLineColor: () => '#E2E8F0'
+            hLineColor: () => '#DFD7C9',
+            vLineColor: () => '#DFD7C9'
           },
           margin: [0, 0, 0, 15]
         },
         // Detailed Category Counter Block
         {
           stack: [
-            { text: 'DETAILED CATEGORY COUNTER', fontSize: 9, bold: true, color: '#3F4E4F', margin: [0, 0, 0, 6] },
+            { text: 'DETAILED CATEGORY COUNTER', fontSize: 8, bold: true, color: '#2C3639', margin: [0, 0, 0, 6] },
             {
               table: {
                 widths: ['*', '*', '*', '*', '*', '*', '*'],
-                dontBreakRows: true,
                 body: [
                   [
-                    { 
-                      text: [
-                        { text: '● ', color: '#3B82F6', fontSize: 8 }, 
-                        { text: 'Office', color: '#64748B' }
-                      ], 
-                      fontSize: 8, 
-                      bold: true, 
-                      alignment: 'center', 
-                      fillColor: '#F8FAFC' 
-                    },
-                    { 
-                      text: [
-                        { text: '● ', color: '#14B8A6', fontSize: 8 }, 
-                        { text: 'WFH', color: '#64748B' }
-                      ], 
-                      fontSize: 8, 
-                      bold: true, 
-                      alignment: 'center', 
-                      fillColor: '#F8FAFC' 
-                    },
-                    { 
-                      text: [
-                        { text: '● ', color: '#6366F1', fontSize: 8 }, 
-                        { text: 'Diff Branch', color: '#64748B' }
-                      ], 
-                      fontSize: 8, 
-                      bold: true, 
-                      alignment: 'center', 
-                      fillColor: '#F8FAFC' 
-                    },
-                    { 
-                      text: [
-                        { text: '● ', color: '#22C55E', fontSize: 8 }, 
-                        { text: 'Vacation', color: '#64748B' }
-                      ], 
-                      fontSize: 8, 
-                      bold: true, 
-                      alignment: 'center', 
-                      fillColor: '#F8FAFC' 
-                    },
-                    { 
-                      text: [
-                        { text: '● ', color: '#A27B5B', fontSize: 8 }, 
-                        { text: 'Sick Day', color: '#64748B' }
-                      ], 
-                      fontSize: 8, 
-                      bold: true, 
-                      alignment: 'center', 
-                      fillColor: '#F8FAFC' 
-                    },
-                    { 
-                      text: [
-                        { text: '● ', color: '#F43F5E', fontSize: 8 }, 
-                        { text: 'Holiday', color: '#64748B' }
-                      ], 
-                      fontSize: 8, 
-                      bold: true, 
-                      alignment: 'center', 
-                      fillColor: '#F8FAFC' 
-                    },
-                    { 
-                      text: [
-                        { text: '● ', color: '#64748B', fontSize: 8 }, 
-                        { text: 'Unpaid', color: '#64748B' }
-                      ], 
-                      fontSize: 8, 
-                      bold: true, 
-                      alignment: 'center', 
-                      fillColor: '#F8FAFC' 
-                    }
+                    { text: 'Office', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: 'WFH', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: 'Diff Branch', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: 'Vacation', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: 'Sick Day', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: 'Holiday', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: 'Unpaid', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' }
                   ],
                   [
-                    { text: `${officeDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
-                    { text: `${wfhDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
-                    { text: `${otherOfficeDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
-                    { text: `${vacationDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
-                    { text: `${sickDaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
-                    { text: `${holidaysCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' },
-                    { text: `${unpaidCount} d`, fontSize: 11, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#F8FAFC' }
+                    { text: `${officeDaysCount} d`, fontSize: 10, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: `${wfhDaysCount} d`, fontSize: 10, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: `${otherOfficeDaysCount} d`, fontSize: 10, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: `${vacationDaysCount} d`, fontSize: 10, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: `${sickDaysCount} d`, fontSize: 10, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: `${holidaysCount} d`, fontSize: 10, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: `${unpaidCount} d`, fontSize: 10, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#FAF8F5' }
                   ]
                 ]
               },
               layout: {
                 hLineWidth: (i: number) => (i === 0 || i === 2) ? 1 : 0.5,
                 vLineWidth: () => 0.5,
-                hLineColor: () => '#E2E8F0',
-                vLineColor: () => '#E2E8F0'
+                hLineColor: () => '#DFD7C9',
+                vLineColor: () => '#DFD7C9'
               }
             }
           ],
@@ -449,65 +337,27 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
         },
         // Commute tax calculation method
         {
-          fillColor: '#F1F5F9', // slate-100
+          fillColor: '#F3EFE9',
           table: {
             widths: ['*'],
-            dontBreakRows: true,
             body: [
               [
                 {
                   margin: [12, 10, 12, 10],
                   stack: [
-                    { text: 'COMMUTE TAX CALCULATION METHOD (DANISH SKAT RULES)', fontSize: 9, bold: true, color: '#3F4E4F', margin: [0, 0, 0, 6] },
-                    { 
-                      text: [
-                        { text: 'The commute deduction estimate is calculated dynamically based on Danish tax laws for ', italic: true },
-                        { text: `${selectedYear}`, bold: true, italic: false },
-                        { text: ' for high-integrity audit logs:', italic: true }
-                      ],
-                      fontSize: 9.5, 
-                      color: '#334155', 
-                      margin: [0, 0, 0, 6] 
-                    },
+                    { text: 'COMMUTE TAX CALCULATION METHOD (DANISH SKAT RULES)', fontSize: 8, bold: true, color: '#2C3639', margin: [0, 0, 0, 6] },
+                    { text: `The commute deduction estimate is calculated dynamically based on Danish tax laws for ${selectedYear} for high-integrity audit logs:`, fontSize: 8, color: '#2C3639', margin: [0, 0, 0, 6] },
                     {
                       ul: [
-                        [
-                          { text: 'Default Office (', italic: true },
-                          { text: settings.defaultOfficeLocationName || 'Default Office Location', bold: true, italic: false },
-                          { text: ') round-trip distance checked is: ', italic: true },
-                          { text: `${settings.roundTripDistanceKm} km`, bold: true, italic: false },
-                          { text: '.', italic: true }
-                        ],
-                        [
-                          { text: 'First ', italic: true },
-                          { text: '24 km', bold: true, italic: false },
-                          { text: ' of any commute gets no refund. Deductible distance: ', italic: true },
-                          { text: `${Math.max(0, Number(settings.roundTripDistanceKm || 0) - 24)} km`, bold: true, italic: false },
-                          { text: ' / default commuter day.', italic: true }
-                        ],
-                        [
-                          { text: 'Portion ', italic: true },
-                          { text: '25 - 120 km', bold: true, italic: false },
-                          { text: ' rate is: ', italic: true },
-                          { text: `${activeTaxSetting.rate1} DKK/km`, bold: true, italic: false },
-                          { text: '.', italic: true }
-                        ],
-                        [
-                          { text: 'Portion above ', italic: true },
-                          { text: '120 km', bold: true, italic: false },
-                          { text: ' rate is: ', italic: true },
-                          { text: `${activeTaxSetting.rate2} DKK/km`, bold: true, italic: false },
-                          { text: '.', italic: true }
-                        ],
-                        [
-                          { text: 'Different office locations: Included dynamically if enabled in settings, using their specific round-trip distances.', italic: true }
-                        ],
-                        [
-                          { text: 'Exclusions: Saturdays/Sundays, Sick spells, Vacation, non-commute remote locations, and Work-from-Home days.', italic: true }
-                        ]
+                        `Default Office (${settings.defaultOfficeLocationName || 'Default Office Location'}) round-trip distance checked is: ${settings.roundTripDistanceKm} km.`,
+                        `First 24 km of any commute gets no refund. Deductible distance: ${Math.max(0, Number(settings.roundTripDistanceKm || 0) - 24)} km / default commuter day.`,
+                        `Portion 25 - 120 km rate is: ${activeTaxSetting.rate1} DKK/km.`,
+                        `Portion above 120 km rate is: ${activeTaxSetting.rate2} DKK/km.`,
+                        `Different office locations: Included dynamically if enabled in settings, using their specific round-trip distances.`,
+                        `Exclusions: Saturdays/Sundays, Sick spells, Vacation, non-commute remote locations, and Work-from-Home days.`
                       ],
-                      fontSize: 9.5,
-                      color: '#334155'
+                      fontSize: 8,
+                      color: '#2C3639'
                     }
                   ]
                 }
@@ -517,21 +367,21 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
           layout: {
             hLineWidth: () => 1,
             vLineWidth: () => 1,
-            hLineColor: () => '#E2E8F0',
-            vLineColor: () => '#E2E8F0'
+            hLineColor: () => '#DFD7C9',
+            vLineColor: () => '#DFD7C9'
           },
           margin: [0, 0, 0, 15]
         },
         // Force break to start the table on page 2
         { text: '', pageBreak: 'before' },
-        { text: 'Chronological Statement of Workdays (Office Commutes Only)'.toUpperCase(), fontSize: 11, bold: true, color: '#3F4E4F', margin: [0, 0, 0, 10], keepWithNext: true }
+        { text: 'Chronological Statement of Workdays (Office Commutes Only)'.toUpperCase(), fontSize: 10, bold: true, color: '#2C3639', margin: [0, 0, 0, 10], keepWithNext: true }
       ];
 
       // Add monthly tables
       if (sortedMonths.length === 0) {
         content.push({
           text: 'No office commute entries recorded in the selected timeframe.',
-          fontSize: 9.5,
+          fontSize: 9,
           italic: true,
           alignment: 'center',
           margin: [0, 20, 0, 20]
@@ -546,35 +396,34 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
             stack: [
               {
                 columns: [
-                  { text: `${monthName.toUpperCase()} ${selectedYear}`, fontSize: 11, bold: true, color: '#3F4E4F' },
-                  { text: `${groupEntries.length} office ${groupEntries.length === 1 ? 'day' : 'days'}`, fontSize: 9, bold: true, color: '#64748B', alignment: 'right' }
+                  { text: `${monthName.toUpperCase()} ${selectedYear}`, fontSize: 10, bold: true, color: '#2C3639' },
+                  { text: `${groupEntries.length} office ${groupEntries.length === 1 ? 'day' : 'days'}`, fontSize: 8, bold: true, color: '#8C7C6B', alignment: 'right' }
                 ],
                 margin: [0, 10, 0, 6]
               },
               {
                 table: {
                   headerRows: 1,
-                  dontBreakRows: true,
                   widths: ['15%', '13%', '8%', '16%', '12%', '*'],
                   body: [
                     [
-                      { text: 'Date', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F' },
-                      { text: 'Weekday', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F' },
-                      { text: 'Week', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F', alignment: 'center' },
-                      { text: 'Worked Hours', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F', alignment: 'center' },
-                      { text: 'Overtime', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F', alignment: 'center' },
-                      { text: 'Notes', bold: true, fontSize: 9, color: '#FFFFFF', fillColor: '#3F4E4F' }
+                      { text: 'Date', bold: true, fontSize: 8, color: '#2C3639', fillColor: '#F3EFE9' },
+                      { text: 'Weekday', bold: true, fontSize: 8, color: '#2C3639', fillColor: '#F3EFE9' },
+                      { text: 'Week', bold: true, fontSize: 8, color: '#2C3639', fillColor: '#F3EFE9', alignment: 'center' },
+                      { text: 'Worked Hours', bold: true, fontSize: 8, color: '#2C3639', fillColor: '#F3EFE9', alignment: 'center' },
+                      { text: 'Overtime', bold: true, fontSize: 8, color: '#2C3639', fillColor: '#F3EFE9', alignment: 'center' },
+                      { text: 'Notes', bold: true, fontSize: 8, color: '#2C3639', fillColor: '#F3EFE9' }
                     ],
                     ...groupEntries.map((e) => {
-                      const otColor = e.overtime > 0 ? '#16A34A' : e.overtime < 0 ? '#EF4444' : '#94A3B8';
+                      const otColor = e.overtime > 0 ? '#73825E' : e.overtime < 0 ? '#D32F2F' : '#9E9E9E';
                       const otText = e.overtime >= 0 ? `+${e.overtime.toFixed(2)}` : e.overtime.toFixed(2);
                       return [
-                        { text: e.date, fontSize: 9.5, color: '#2C3639', bold: true },
-                        { text: e.weekday, fontSize: 9.5, color: '#2C3639', bold: true },
-                        { text: `W${e.weekNumber}`, fontSize: 9.5, color: '#2C3639', bold: true, alignment: 'center' },
-                        { text: `${e.finalCountedHours.toFixed(2)} hrs`, fontSize: 9.5, color: '#2C3639', bold: true, alignment: 'center' },
-                        { text: otText, fontSize: 9.5, color: otColor, bold: true, alignment: 'center' },
-                        { text: e.notes || '—', fontSize: 9.5, color: '#334155', italic: true }
+                        { text: e.date, fontSize: 8, color: '#2C3639', bold: true },
+                        { text: e.weekday, fontSize: 8, color: '#2C3639', bold: true },
+                        { text: `W${e.weekNumber}`, fontSize: 8, color: '#2C3639', bold: true, alignment: 'center' },
+                        { text: `${e.finalCountedHours.toFixed(2)} hrs`, fontSize: 8, color: '#2C3639', bold: true, alignment: 'center' },
+                        { text: otText, fontSize: 8, color: otColor, bold: true, alignment: 'center' },
+                        { text: e.notes || '—', fontSize: 8, color: '#5C4D3C', italic: true }
                       ];
                     })
                   ]
@@ -582,7 +431,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                 layout: {
                   hLineWidth: function(i: number, node: any) { return (i === 0 || i === 1 || i === node.table.body.length) ? 1 : 0.5; },
                   vLineWidth: () => 0,
-                  hLineColor: (i: number) => i === 1 ? '#3F4E4F' : '#E2E8F0'
+                  hLineColor: (i: number) => i === 1 ? '#DFD7C9' : '#E2E8F0'
                 },
                 margin: [0, 0, 0, 15]
               }
@@ -594,9 +443,6 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
       const docDefinition: any = {
         pageSize: 'A4',
         pageMargins: [40, 50, 40, 50],
-        defaultStyle: {
-          font: 'Helvetica'
-        },
         header: function(currentPage: number) {
           if (currentPage === 1) return null;
           return {
@@ -604,23 +450,12 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
             stack: [
               {
                 columns: [
-                  {
-                    image: logoBase64,
-                    width: 16,
-                    height: 16
-                  },
-                  { 
-                    text: 'OFFICIAL TIME & COMMUTE LEDGER', 
-                    alignment: 'right', 
-                    fontSize: 9, 
-                    color: '#3F4E4F', 
-                    bold: true,
-                    margin: [0, 2, 0, 0]
-                  }
+                  { text: 'WorkLedger', bold: true, fontSize: 9, color: '#2C3639' },
+                  { text: 'OFFICIAL TIME & COMMUTE LEDGER', alignment: 'right', fontSize: 8, color: '#A27B5B', bold: true }
                 ]
               },
               {
-                canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 0.5, strokeColor: '#E2E8F0' }]
+                canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 0.5, strokeColor: '#DFD7C9' }]
               }
             ]
           };
@@ -630,13 +465,13 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
             margin: [40, 10, 40, 20],
             stack: [
               {
-                canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, strokeColor: '#E2E8F0' }]
+                canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, strokeColor: '#DFD7C9' }]
               },
               {
                 margin: [0, 5, 0, 0],
                 columns: [
-                  { text: `Generated by WorkLedger Denmark • Report Date: ${todayStr}`, fontSize: 8, italic: true, color: '#64748B' },
-                  { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right', fontSize: 8, color: '#64748B' }
+                  { text: `Generated by WorkLedger Denmark • Report Date: ${todayStr}`, fontSize: 7, italic: true, color: '#8C7C6B' },
+                  { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right', fontSize: 7, color: '#8C7C6B' }
                 ]
               }
             ]
