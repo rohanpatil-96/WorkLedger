@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { DayEntry, WorkCategory, UserSettings, HolidaySetting, TaxRateSetting, DifferentOfficeLocation } from '../types';
 import { getDanishHolidays } from '../utils/holidays';
 import { detectDeviceLocation } from '../utils/deviceLocation';
@@ -21,8 +21,17 @@ import {
   CheckCircle,
   AlertTriangle,
   MapPin,
-  Briefcase
+  Briefcase,
+  Database,
+  Download,
+  Upload
 } from 'lucide-react';
+
+import { Capacitor } from '@capacitor/core';
+import { Preferences } from '@capacitor/preferences';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+import { FilePicker } from '@capawesome/capacitor-file-picker';
 
 interface SettingsViewProps {
   settings: UserSettings;
@@ -79,6 +88,18 @@ export default function SettingsView({
   const [newLocName, setNewLocName] = useState('');
   const [newLocDistance, setNewLocDistance] = useState<number | ''>('');
   const [newLocInclude, setNewLocInclude] = useState<boolean>(true);
+
+  // Backup & Restore states
+  const [backupError, setBackupError] = useState<string | null>(null);
+  const [backupSuccess, setBackupSuccess] = useState<string | null>(null);
+  const [isImportConfirming, setIsImportConfirming] = useState(false);
+  const [pendingImportData, setPendingImportData] = useState<{
+    parsed: any;
+    currentCount: number;
+    backupCount: number;
+  } | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddOfficeLocation = (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,6 +220,289 @@ export default function SettingsView({
     onUpdateSettings(updatedSettings);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const validateBackupData = (parsed: any): { valid: boolean; error?: string } => {
+    if (!parsed || typeof parsed !== 'object') {
+      return { valid: false, error: 'The file is empty or does not contain a valid JSON object.' };
+    }
+
+    if (parsed.version === undefined) {
+      return { valid: false, error: 'Validation failed: Backup schema version is missing. File is unrecognized or incompatible.' };
+    }
+
+    if (typeof parsed.version !== 'number' || parsed.version < 1) {
+      return { valid: false, error: `Validation failed: Incompatible backup schema version (${parsed.version}).` };
+    }
+
+    if (!parsed.settings || typeof parsed.settings !== 'object') {
+      return { valid: false, error: "Validation failed: 'settings' object is missing or corrupted." };
+    }
+
+    const s = parsed.settings;
+    if (typeof s.standardWorkdayHours !== 'number') {
+      return { valid: false, error: "Validation failed: 'standardWorkdayHours' must be a valid number." };
+    }
+    if (s.taxRates && !Array.isArray(s.taxRates)) {
+      return { valid: false, error: "Validation failed: 'taxRates' must be a valid array." };
+    }
+    if (s.holidays && !Array.isArray(s.holidays)) {
+      return { valid: false, error: "Validation failed: 'holidays' must be a valid array." };
+    }
+    if (s.categoryColors && typeof s.categoryColors !== 'object') {
+      return { valid: false, error: "Validation failed: 'categoryColors' must be a valid object." };
+    }
+    if (s.overtimeCreditRules && typeof s.overtimeCreditRules !== 'object') {
+      return { valid: false, error: "Validation failed: 'overtimeCreditRules' must be a valid object." };
+    }
+
+    if (!parsed.entries || !Array.isArray(parsed.entries)) {
+      return { valid: false, error: "Validation failed: 'entries' array is missing or corrupted." };
+    }
+
+    for (let i = 0; i < parsed.entries.length; i++) {
+      const entry = parsed.entries[i];
+      if (!entry || typeof entry !== 'object') {
+        return { valid: false, error: `Validation failed: Entry at index ${i} is not a valid object.` };
+      }
+      if (typeof entry.date !== 'string' || !entry.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return { valid: false, error: `Validation failed: Entry at index ${i} has an invalid date format. Expected YYYY-MM-DD.` };
+      }
+      if (typeof entry.category !== 'string') {
+        return { valid: false, error: `Validation failed: Entry for date ${entry.date} has an invalid or missing category.` };
+      }
+    }
+
+    return { valid: true };
+  };
+
+  const exportBackup = async () => {
+    setBackupError(null);
+    setBackupSuccess(null);
+    try {
+      const { value: cachedEntries } = await Preferences.get({ key: 'danish_tracker_workday_entries' });
+      const currentEntries = cachedEntries ? JSON.parse(cachedEntries) : [];
+
+      const backupData = {
+        version: 1,
+        timestamp: new Date().toISOString(),
+        settings: {
+          ...settings,
+          standardWorkdayHours,
+          roundTripDistanceKm,
+          defaultOfficeLocationName,
+          enableManualOverride,
+          preferredYearView,
+          taxRates,
+          holidays,
+          userName,
+          userEmail,
+          activeCompany,
+          companies,
+          theme,
+          differentOfficeLocations
+        },
+        entries: currentEntries
+      };
+
+      const jsonString = JSON.stringify(backupData, null, 2);
+      const fileName = `workledger_backup_${new Date().toISOString().split('T')[0]}.json`;
+
+      // Check if running on Capacitor native platform
+      if (Capacitor.isNativePlatform()) {
+        try {
+          // Write file natively
+          const writeResult = await Filesystem.writeFile({
+            path: fileName,
+            data: jsonString,
+            directory: Directory.Cache,
+            encoding: Encoding.UTF8
+          });
+
+          // Share file using Share API
+          await Share.share({
+            title: 'Workledger Backup',
+            text: `Backup of settings and ${currentEntries.length} logged entries.`,
+            url: writeResult.uri,
+            dialogTitle: 'Save or Share Backup File'
+          });
+
+          setBackupSuccess('Backup file exported and shared successfully.');
+          return;
+        } catch (nativeErr: any) {
+          console.error('Capacitor native export failed, falling back to browser download:', nativeErr);
+        }
+      }
+
+      // Plain browser download fallback
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setBackupSuccess('Backup file exported and downloaded successfully.');
+    } catch (err: any) {
+      console.error('Export failed:', err);
+      setBackupError('Export failed: ' + err.message);
+    }
+  };
+
+  const processImportString = (text: string) => {
+    try {
+      const parsed = JSON.parse(text);
+      const validation = validateBackupData(parsed);
+
+      if (!validation.valid) {
+        setBackupError(validation.error || 'Invalid backup file schema.');
+        return;
+      }
+
+      // Load current entries asynchronously to count them for overwrite warning
+      Preferences.get({ key: 'danish_tracker_workday_entries' })
+        .then(({ value }) => {
+          const currentCount = value ? JSON.parse(value).length : 0;
+          setPendingImportData({
+            parsed,
+            currentCount,
+            backupCount: parsed.entries.length
+          });
+          setIsImportConfirming(true);
+        })
+        .catch(() => {
+          setPendingImportData({
+            parsed,
+            currentCount: 0,
+            backupCount: parsed.entries.length
+          });
+          setIsImportConfirming(true);
+        });
+    } catch (err: any) {
+      setBackupError('Failed to parse backup file as valid JSON: ' + err.message);
+    }
+  };
+
+  const handleWebImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBackupError(null);
+    setBackupSuccess(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input value so same file can be imported again
+    e.target.value = '';
+
+    if (file.size > 10 * 1024 * 1024) {
+      setBackupError('Oversized file upload: File exceeds the maximum size limit of 10 MB.');
+      return;
+    }
+
+    if (!file.name.toLowerCase().endsWith('.json')) {
+      setBackupError('Invalid file type: Only .json files are supported.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result;
+      if (typeof text !== 'string') {
+        setBackupError('Failed to read the selected file as a text string.');
+        return;
+      }
+      processImportString(text);
+    };
+    reader.onerror = () => {
+      setBackupError('An error occurred while reading the file from disk.');
+    };
+    reader.readAsText(file);
+  };
+
+  const handleNativeImport = async () => {
+    setBackupError(null);
+    setBackupSuccess(null);
+    try {
+      // Pick the file natively
+      const pickResult = await FilePicker.pickFiles({
+        types: ['application/json'],
+        readData: true
+      });
+
+      if (!pickResult.files || pickResult.files.length === 0) {
+        // User cancelled
+        return;
+      }
+
+      const file = pickResult.files[0];
+
+      if (file.size && file.size > 10 * 1024 * 1024) {
+        setBackupError('Oversized file upload: File exceeds the maximum size limit of 10 MB.');
+        return;
+      }
+
+      if (file.name && !file.name.toLowerCase().endsWith('.json')) {
+        setBackupError('Invalid file type: Please select a valid .json file.');
+        return;
+      }
+
+      if (!file.data) {
+        setBackupError('Failed to read file contents natively (empty or unavailable data).');
+        return;
+      }
+
+      let fileString: string;
+      try {
+        fileString = atob(file.data);
+      } catch {
+        setBackupError('Failed to decode native file data. The file might be corrupted or malformed.');
+        return;
+      }
+
+      processImportString(fileString);
+    } catch (err: any) {
+      console.error('Native import failed:', err);
+      // Fallback to browser file input click in case plugins fail
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!pendingImportData) return;
+    const { parsed } = pendingImportData;
+
+    try {
+      // 1. Save settings to cache
+      await Preferences.set({
+        key: 'danish_tracker_workday_settings',
+        value: JSON.stringify(parsed.settings)
+      });
+
+      // 2. Save entries to cache
+      await Preferences.set({
+        key: 'danish_tracker_workday_entries',
+        value: JSON.stringify(parsed.entries)
+      });
+
+      setIsImportConfirming(false);
+      setPendingImportData(null);
+      setBackupSuccess(`Successfully imported ${parsed.entries.length} entries and restored complete profile settings!`);
+
+      // Update state immediately
+      onUpdateSettings(parsed.settings);
+
+      // Force full page reload after 2s so App.tsx gets fresh caches for everything
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (err: any) {
+      setIsImportConfirming(false);
+      setPendingImportData(null);
+      setBackupError('Failed to save imported data: ' + err.message);
+    }
   };
 
   return (
@@ -786,6 +1090,125 @@ export default function SettingsView({
             </div>
           </div>
         </div>
+
+        {/* Data Backup & Restore (Native-Aware JSON Import/Export) */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6" id="data-backup-and-restore-section">
+          <h3 className="text-base font-bold text-brand-slate tracking-tight flex items-center gap-2 border-b border-slate-100 pb-3">
+            <Database className="text-brand-blue w-5 h-5" />
+            <span>Data Backup & Restore</span>
+          </h3>
+
+          <div className="space-y-4 text-xs leading-relaxed text-slate-600">
+            <p>
+              Export your complete settings, customized category colors, registered company directories, public holidays database, and all logged calendar work entries to a single portable JSON file. Restore your backup at any time on this device or transfer it to another device.
+            </p>
+
+            {/* Hidden web input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".json"
+              onChange={handleWebImport}
+              className="hidden"
+              id="web-backup-file-input"
+            />
+
+            {/* Error & Success indicators */}
+            {backupError && (
+              <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl flex items-start gap-3 shadow-sm animate-fade-in" id="backup-error-banner">
+                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span className="font-bold text-red-950 block mb-0.5">Import Error</span>
+                  <p className="text-[11px] text-red-900 leading-normal">{backupError}</p>
+                </div>
+              </div>
+            )}
+
+            {backupSuccess && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl flex items-start gap-3 shadow-sm animate-fade-in" id="backup-success-banner">
+                <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span className="font-bold text-emerald-950 block mb-0.5">Success</span>
+                  <p className="text-[11px] text-emerald-900 leading-normal">{backupSuccess}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Buttons Row */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                type="button"
+                onClick={exportBackup}
+                className="flex-1 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-bold px-4 py-3 rounded-xl border border-slate-200 transition flex items-center justify-center gap-2 cursor-pointer shadow-sm text-xs"
+              >
+                <Download className="w-4 h-4 text-slate-500" />
+                <span>Export Backup JSON</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={Capacitor.isNativePlatform() ? handleNativeImport : () => fileInputRef.current?.click()}
+                className="flex-1 bg-brand-blue hover:opacity-90 active:opacity-80 text-white font-bold px-4 py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm text-xs"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Import Backup JSON</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Visual Confirm Modal for overwriting existing data */}
+        {isImportConfirming && pendingImportData && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in font-sans">
+            <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="bg-amber-100 text-amber-800 p-2.5 rounded-full shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-amber-650" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <h4 className="text-sm font-extrabold text-slate-900 tracking-tight">Overwrite Current Data?</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    You are about to restore a complete settings & entries backup file. This action is irreversible and will replace all your current logs and preferences.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2 text-[11px] font-mono">
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-semibold">Current Local Database:</span>
+                  <span className="text-slate-800 font-bold">{pendingImportData.currentCount} entries</span>
+                </div>
+                <div className="flex justify-between border-t border-slate-200/60 pt-2">
+                  <span className="text-slate-500 font-semibold">Incoming Backup File:</span>
+                  <span className="text-brand-blue font-bold">+{pendingImportData.backupCount} entries</span>
+                </div>
+                <div className="text-[10px] text-slate-400 text-center pt-2 italic leading-snug font-sans">
+                  Full User Settings (category colors, standard hours, corporate branches, custom overtime credit rules) will be completely restored.
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsImportConfirming(false);
+                    setPendingImportData(null);
+                  }}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmImport}
+                  className="flex-1 bg-brand-blue hover:opacity-90 text-white py-3 rounded-xl transition cursor-pointer shadow-sm"
+                >
+                  Confirm Overwrite
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Global Action & Seed state */}
         <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center bg-white border border-slate-200 p-5 rounded-2xl gap-4 shadow-sm">
