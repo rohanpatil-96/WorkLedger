@@ -63,6 +63,13 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
     return [...yearEntries].sort((a, b) => a.date.localeCompare(b.date));
   }, [yearEntries, reportType, selectedMonth]);
 
+  const statementEntries = useMemo(() => {
+    return reportEntries.filter((e) => 
+      e.category === WorkCategory.Office || 
+      (e.category === WorkCategory.OtherOffice && getCommuteDistance(e, settings) > 0)
+    );
+  }, [reportEntries, settings]);
+
   // Count by category helper
   const countByCategory = (list: DayEntry[], cat: WorkCategory) =>
     list.filter((e) => e.category === cat).length;
@@ -151,13 +158,11 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
       
       // Group entries by month
       const groups: { [key: number]: DayEntry[] } = {};
-      reportEntries.forEach((e) => {
-        if (e.category === WorkCategory.Office) {
-          if (!groups[e.month]) {
-            groups[e.month] = [];
-          }
-          groups[e.month].push(e);
+      statementEntries.forEach((e) => {
+        if (!groups[e.month]) {
+          groups[e.month] = [];
         }
+        groups[e.month].push(e);
       });
 
       const sortedMonths = Object.keys(groups)
@@ -346,15 +351,66 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                   margin: [12, 10, 12, 10],
                   stack: [
                     { text: 'COMMUTE TAX CALCULATION METHOD (DANISH SKAT RULES)', fontSize: 8, bold: true, color: '#2C3639', margin: [0, 0, 0, 6] },
-                    { text: `The commute deduction estimate is calculated dynamically based on Danish tax laws for ${selectedYear} for high-integrity audit logs:`, fontSize: 8, color: '#2C3639', margin: [0, 0, 0, 6] },
+                    {
+                      text: [
+                        { text: 'The commute deduction estimate is calculated dynamically based on Danish tax laws for ', italic: true },
+                        { text: `${selectedYear}`, bold: true, italic: true },
+                        { text: ' for high-integrity audit logs:', italic: true }
+                      ],
+                      fontSize: 8,
+                      color: '#2C3639',
+                      margin: [0, 0, 0, 6]
+                    },
                     {
                       ul: [
-                        `Default Office (${settings.defaultOfficeLocationName || 'Default Office Location'}) round-trip distance checked is: ${settings.roundTripDistanceKm} km.`,
-                        `First 24 km of any commute gets no refund. Deductible distance: ${Math.max(0, Number(settings.roundTripDistanceKm || 0) - 24)} km / default commuter day.`,
-                        `Portion 25 - 120 km rate is: ${activeTaxSetting.rate1} DKK/km.`,
-                        `Portion above 120 km rate is: ${activeTaxSetting.rate2} DKK/km.`,
-                        `Different office locations: Included dynamically if enabled in settings, using their specific round-trip distances.`,
-                        `Exclusions: Saturdays/Sundays, Sick spells, Vacation, non-commute remote locations, and Work-from-Home days.`
+                        {
+                          text: [
+                            { text: 'Default Office (', italic: true },
+                            { text: `${settings.defaultOfficeLocationName || 'Default Office Location'}`, bold: true, italic: true },
+                            { text: ') round-trip distance checked is: ', italic: true },
+                            { text: `${settings.roundTripDistanceKm} km`, bold: true, italic: true },
+                            { text: '.', italic: true }
+                          ]
+                        },
+                        {
+                          text: [
+                            { text: 'First ', italic: true },
+                            { text: '24 km', bold: true, italic: true },
+                            { text: ' of any commute gets no refund. Deductible distance: ', italic: true },
+                            { text: `${Math.max(0, Number(settings.roundTripDistanceKm || 0) - 24)} km`, bold: true, italic: true },
+                            { text: ' / default commuter day.', italic: true }
+                          ]
+                        },
+                        {
+                          text: [
+                            { text: 'Portion ', italic: true },
+                            { text: '25 - 120 km', bold: true, italic: true },
+                            { text: ' rate is: ', italic: true },
+                            { text: `${activeTaxSetting.rate1} DKK/km`, bold: true, italic: true },
+                            { text: '.', italic: true }
+                          ]
+                        },
+                        {
+                          text: [
+                            { text: 'Portion above ', italic: true },
+                            { text: '120 km', bold: true, italic: true },
+                            { text: ' rate is: ', italic: true },
+                            { text: `${activeTaxSetting.rate2} DKK/km`, bold: true, italic: true },
+                            { text: '.', italic: true }
+                          ]
+                        },
+                        {
+                          text: [
+                            { text: 'Different office locations: ', bold: true, italic: true },
+                            { text: 'Included dynamically if enabled in settings, using their specific round-trip distances.', italic: true }
+                          ]
+                        },
+                        {
+                          text: [
+                            { text: 'Exclusions: ', bold: true, italic: true },
+                            { text: 'Saturdays/Sundays, Sick spells, Vacation, non-commute remote locations, and Work-from-Home days.', italic: true }
+                          ]
+                        }
                       ],
                       fontSize: 8,
                       color: '#2C3639'
@@ -397,7 +453,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
               {
                 columns: [
                   { text: `${monthName.toUpperCase()} ${selectedYear}`, fontSize: 10, bold: true, color: '#2C3639' },
-                  { text: `${groupEntries.length} office ${groupEntries.length === 1 ? 'day' : 'days'}`, fontSize: 8, bold: true, color: '#8C7C6B', alignment: 'right' }
+                  { text: `${groupEntries.length} office / commute ${groupEntries.length === 1 ? 'day' : 'days'}`, fontSize: 8, bold: true, color: '#8C7C6B', alignment: 'right' }
                 ],
                 margin: [0, 10, 0, 6]
               },
@@ -423,7 +479,12 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                         { text: `W${e.weekNumber}`, fontSize: 8, color: '#2C3639', bold: true, alignment: 'center' },
                         { text: `${e.finalCountedHours.toFixed(2)} hrs`, fontSize: 8, color: '#2C3639', bold: true, alignment: 'center' },
                         { text: otText, fontSize: 8, color: otColor, bold: true, alignment: 'center' },
-                        { text: e.notes || '—', fontSize: 8, color: '#5C4D3C', italic: true }
+                        {
+                          text: [
+                            e.category === WorkCategory.OtherOffice ? { text: `[Diff Office${e.location ? ': ' + e.location : ''}] `, color: '#6366F1', bold: true, fontSize: 7.5 } : null,
+                            { text: e.notes || '—', fontSize: 8, color: '#5C4D3C', italic: true }
+                          ].filter(Boolean)
+                        }
                       ];
                     })
                   ]
@@ -845,7 +906,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                     </h4>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="px-3.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-205 dark:border-slate-705 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl shadow-xs select-none">
-                        📊 {reportEntries.filter(e => e.category === WorkCategory.Office).length} office days recorded
+                        📊 {statementEntries.length} office & commute days recorded
                       </span>
                       <button
                         type="button"
@@ -865,13 +926,11 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                   <div className={`${showChronologicalStatement ? 'block' : 'hidden print:block'} space-y-6`}>
                     {useMemo(() => {
                       const groups: { [key: number]: DayEntry[] } = {};
-                      reportEntries.forEach((e) => {
-                        if (e.category === WorkCategory.Office) {
-                          if (!groups[e.month]) {
-                            groups[e.month] = [];
-                          }
-                          groups[e.month].push(e);
+                      statementEntries.forEach((e) => {
+                        if (!groups[e.month]) {
+                          groups[e.month] = [];
                         }
+                        groups[e.month].push(e);
                       });
 
                       return Object.keys(groups)
@@ -882,7 +941,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                           monthName: monthsNames[m - 1],
                           entries: groups[m].sort((a, b) => a.date.localeCompare(b.date))
                         }));
-                    }, [reportEntries]).map((group) => (
+                    }, [statementEntries]).map((group) => (
                       <div 
                         key={group.monthNum} 
                         className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl p-5 shadow-xs print-inverted-window space-y-3 print-avoid-break print:break-inside-avoid"
@@ -892,7 +951,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                             {group.monthName} {selectedYear}
                           </h5>
                           <span className="text-[10px] font-mono px-2 py-0.5 bg-slate-105 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded font-bold print-inner-card">
-                            {group.entries.length} office {group.entries.length === 1 ? 'day' : 'days'}
+                            {group.entries.length} office / commute {group.entries.length === 1 ? 'day' : 'days'}
                           </span>
                         </div>
 
@@ -911,16 +970,21 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-slate-700 dark:text-slate-350 font-semibold">
                               {group.entries.map((e) => (
                                 <tr key={e.date} className="break-inside-avoid hover:bg-slate-50/40 dark:hover:bg-slate-800/30">
-                                  <td className="p-2.5 font-mono whitespace-nowrap text-[#2C3639] dark:text-slate-100 font-extrabold text-[11px] print-text-primary col-inkwell">{e.date}</td>
+                                  <td className="p-2.5 font-mono whitespace-nowrap text-[#2C3639] dark:text-[#2C3639] font-extrabold text-[11px] print-text-primary col-inkwell">{e.date}</td>
                                   <td className="p-2.5 font-semibold text-[#2C3639] dark:text-slate-300 col-inkwell">{e.weekday}</td>
                                   <td className="p-2.5 text-center font-bold font-mono text-[#2C3639] dark:text-slate-300 text-[10px] col-inkwell">W{e.weekNumber}</td>
-                                  <td className="p-2.5 text-center font-bold font-mono text-[#2C3639] dark:text-slate-100 text-[11px] print-text-primary col-inkwell">{e.finalCountedHours.toFixed(2)} hrs</td>
+                                  <td className="p-2.5 text-center font-bold font-mono text-[#2C3639] dark:text-[#2C3639] text-[11px] print-text-primary col-inkwell">{e.finalCountedHours.toFixed(2)} hrs</td>
                                   <td className="p-2.5 text-center font-bold font-mono">
                                     <span className={e.overtime > 0 ? 'text-[#73825E] dark:text-[#8A9A76] print-overtime-positive col-olive' : e.overtime < 0 ? 'text-rose-605 font-bold print-overtime-negative' : 'text-slate-400'}>
                                       {e.overtime >= 0 ? `+${e.overtime.toFixed(2)}` : e.overtime.toFixed(2)}
                                     </span>
                                   </td>
                                   <td className="p-2.5 break-words whitespace-normal text-slate-500 dark:text-slate-400 font-normal italic print-text-neutral" title={e.notes}>
+                                    {e.category === WorkCategory.OtherOffice && (
+                                      <span className="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-[9px] font-bold px-1.5 py-0.5 rounded mr-1.5 not-italic select-none border border-indigo-100 dark:border-indigo-900/30">
+                                        Different Office{e.location ? `: ${e.location}` : ''}
+                                      </span>
+                                    )}
                                     {e.notes || '—'}
                                   </td>
                                 </tr>
@@ -931,9 +995,9 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                       </div>
                     ))}
                     
-                    {useMemo(() => reportEntries.filter(e => e.category === WorkCategory.Office).length, [reportEntries]) === 0 && (
+                    {statementEntries.length === 0 && (
                       <div className="text-center py-8 text-slate-400 dark:text-slate-500 italic font-medium bg-slate-50 dark:bg-slate-900/10 border border-slate-200 dark:border-slate-800 rounded-xl print-inverted-window">
-                        No office commute entries recorded in the selected timeframe.
+                        No office or different office commute entries recorded in the selected timeframe.
                       </div>
                     )}
                   </div>
