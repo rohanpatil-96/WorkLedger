@@ -390,8 +390,8 @@ export default function App() {
       </div>
 
       {/* Navigation Sidebar Drawer */}
-      <aside className={`w-full md:w-64 bg-brand-slate flex flex-col z-20 shrink-0 print:hidden ${
-        mobileMenuOpen ? 'block pb-[env(safe-area-inset-bottom,0px)]' : 'hidden md:flex'
+      <aside className={`w-full md:w-64 bg-brand-slate flex flex-col z-20 shrink-0 print:hidden pb-[env(safe-area-inset-bottom,0px)] ${
+        mobileMenuOpen ? 'block' : 'hidden md:flex'
       }`}>
         {/* Brand identity */}
         <div className="hidden md:flex items-center gap-2.5 px-6 py-6 border-b border-slate-700/65">
