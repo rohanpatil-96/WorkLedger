@@ -27,12 +27,13 @@ export default function PitchView({ onNavigate }: PitchViewProps) {
   const [checklist, setChecklist] = useState([
     { id: 't1', text: 'Check the real-time Dashboard to inspect the automatic overtime balances & SKAT commute refund metrics.', completed: false, category: 'Dashboard' },
     { id: 't2', text: 'Go to Settings and change standard workday hours (e.g. from 7.4 to 8.0) or update round-trip distance, then see the changes propagate.', completed: false, category: 'Settings' },
-    { id: 't3', text: 'Use the "Copy Last Workday" shortcut on the Quick Entry page to instantly replicate a previous logged workday.', completed: false, category: 'Quick Entry' },
+    { id: 't3', text: 'Use the "Copy Last Workday" shortcut on the Quick Entry page to replicate previous logged workday attributes instantly.', completed: false, category: 'Quick Entry' },
     { id: 't4', text: 'Perform a bulk-range log (e.g. log 2 weeks of Vacation) and note how the app skips weekends and automatically maps it.', completed: false, category: 'Quick Entry' },
     { id: 't5', text: 'Go to the Interactive Calendar, click on a date, change its category to "WFH" or "Sick day", and see how colors & status update.', completed: false, category: 'Calendar' },
     { id: 't6', text: 'Inspect the "Strategic Long Weekends Planner" below the calendar to discover optimal days for booking vacation.', completed: false, category: 'Calendar' },
-    { id: 't7', text: 'Go to the Reports page, filter by a specific month, and print or export the PDF time sheet to check the layout.', completed: false, category: 'Reports' },
+    { id: 't7', text: 'Go to the Reports page, filter by a specific month, and print or export the PDF time sheet to check the custom print-friendly layout.', completed: false, category: 'Reports' },
     { id: 't8', text: 'Check how WFH or Vacation days do NOT accrue SKAT commuting refund km, proving the app\'s strict compliance guard rails.', completed: false, category: 'Dashboard' },
+    { id: 't9', text: 'Tap your profile name/avatar in the sidebar 5 times to reveal hidden developer tools, then trigger a demo re-seed of 2026 data.', completed: false, category: 'Settings' },
   ]);
 
   const toggleChecklist = (id: string) => {
@@ -57,6 +58,7 @@ Salient Features:
 5. Strategic Long Weekends Planner: Provides a tactical advisor that highlights bridge-days near public holidays to maximize your consecutive vacation rest days.
 6. Bulk Logging & Rapid Copy Shortcuts: Speed up logging of recurring rotas by applying multi-day bulk entries or replicating previous workday details with a single click.
 7. Professional Chronological Reports: Generates elegant, print-ready PDF statements to serve as official ledger documentation for tax authorities, payroll, or audit trails.
+8. Hidden Developer Sandbox Tools: Tap your profile name in the left menu 5 times to reveal hidden developer settings and trigger realistic simulated 2026 data re-seeding instantly!
 
 Access and test the live application here:
 ${window.location.origin}
@@ -345,7 +347,7 @@ Your feedback is highly valued. Try out the tool and share your constructive tho
               <AlertCircle className="w-4 h-4 text-amber-700" /> Hidden App Gems to Highlight in Feedback
             </h4>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-800 font-semibold leading-relaxed">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-xs text-slate-800 font-semibold leading-relaxed">
               <div className="space-y-1.5">
                 <span className="font-extrabold text-slate-900 block">1. The Print Media Styling</span>
                 <p className="text-slate-700 font-medium text-[11px]">
@@ -363,7 +365,14 @@ Your feedback is highly valued. Try out the tool and share your constructive tho
               <div className="space-y-1.5">
                 <span className="font-extrabold text-slate-900 block">3. Company Profiles</span>
                 <p className="text-slate-700 font-medium text-[11px]">
-                  You can jump to the Settings tab, add a new Danfoss business entity or change standard daily hours. It seamlessly recalculates expected hours even for older imported log sheets without breaking any data!
+                  You can jump to the Settings tab, add a new employer company or change standard daily hours. It seamlessly recalculates expected hours even for older imported log sheets without breaking any data!
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="font-extrabold text-slate-900 block">4. Hidden Developer Sandbox</span>
+                <p className="text-slate-700 font-medium text-[11px]">
+                  Tap your profile name/avatar in the sidebar 5 times to reveal hidden sandboxing tools. This lets you re-seed the application with realistic 2026 data, instantly syncing state and taking you back to the home view!
                 </p>
               </div>
             </div>

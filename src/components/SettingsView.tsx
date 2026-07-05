@@ -103,6 +103,24 @@ export default function SettingsView({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Sync state variables when settings prop changes (e.g. after reseed/import)
+  React.useEffect(() => {
+    setStandardWorkdayHours(settings.standardWorkdayHours);
+    setRoundTripDistanceKm(settings.roundTripDistanceKm);
+    setDefaultOfficeLocationName(settings.defaultOfficeLocationName || '');
+    setEnableManualOverride(settings.enableManualOverride);
+    setPreferredYearView(settings.preferredYearView);
+    setUserName(settings.userName || '');
+    setUserEmail(settings.userEmail || '');
+    setActiveCompany(
+      settings.activeCompany || (settings.companies && settings.companies.length > 0 ? settings.companies[0] : '')
+    );
+    setCompanies(settings.companies || []);
+    setTaxRates(settings.taxRates);
+    setHolidays(settings.holidays);
+    setDifferentOfficeLocations(settings.differentOfficeLocations || []);
+  }, [settings]);
+
   const handleAddOfficeLocation = (e: React.FormEvent) => {
     e.preventDefault();
     const name = newLocName.trim();
@@ -1259,6 +1277,11 @@ export default function SettingsView({
               <span>Save System Settings</span>
             </button>
           </div>
+        </div>
+
+        {/* Short fine print instruction on enabling developer settings */}
+        <div className="text-center text-[9px] italic font-medium text-slate-400 select-none pt-2 tracking-tight whitespace-nowrap">
+          Tip: Tap your profile name/avatar in the sidebar 5 times to reveal hidden developer settings.
         </div>
       </form>
     </div>

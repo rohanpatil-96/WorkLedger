@@ -292,6 +292,7 @@ export default function App() {
     const synthetic2026 = generateSeedData(settings.standardWorkdayHours);
     setSettings(nextSettings);
     setEntries(synthetic2026);
+    setActiveTab('home');
 
     await Preferences.set({ key: SETTINGS_CACHE_KEY, value: JSON.stringify(nextSettings) });
     await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify(synthetic2026) });
@@ -451,7 +452,7 @@ export default function App() {
              </div>
            </div>
            <div className="text-[9px] font-mono font-medium text-slate-400 border-t border-slate-700/40 pt-2 text-center select-none tracking-tight">
-             © 2026 RRP. All Rights Reserved.
+             © 2026 WorkLedger. All Rights Reserved.
            </div>
          </div>
       </aside>

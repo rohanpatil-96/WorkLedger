@@ -117,20 +117,31 @@ export function calculateDayOvertime(
  * - Portion above 120 km is paid at rate 2 (e.g., 1.14 DKK/km).
  */
 export function calculateCommuteDeduction(distanceKm: number, taxRate: TaxRateSetting): number {
+  // Danish SKAT Commute Deduction Logic (Befordringsfradrag):
+  // 1. First 24 km of the total daily round-trip commute (thresholdKm) are NOT deductible.
+  //    If the round-trip distance is 24 km or less, the deduction is 0.
   if (distanceKm <= taxRate.thresholdKm) {
     return 0;
   }
 
-  const effectiveKm = distanceKm; // Round-trip limit is checked
-  const limit = taxRate.limitKm;
-  const rate1 = taxRate.rate1;
-  const rate2 = taxRate.rate2;
-  const threshold = taxRate.thresholdKm;
+  // Developer Note: 'effectiveKm' represents the daily round-trip commute distance.
+  // It is functionally identical to distanceKm but kept for clear semantic separation 
+  // when checking multi-tier distance thresholds in Danish SKAT calculations.
+  const effectiveKm = distanceKm; 
+  const limit = taxRate.limitKm;       // Typically 120 km threshold
+  const rate1 = taxRate.rate1;         // DKK per km for 25-120 km tier (e.g. 2.28 DKK/km)
+  const rate2 = taxRate.rate2;         // DKK per km for portion above 120 km (e.g. 1.14 DKK/km)
+  const threshold = taxRate.thresholdKm; // Deductible threshold (typically 24 km)
 
+  // 2. Commutes between 25 km and 120 km:
+  //    Deduction = (Total round-trip distance - 24 km) * Rate 1
   if (effectiveKm <= limit) {
     const deductibleKm = effectiveKm - threshold;
     return parseFloat((deductibleKm * rate1).toFixed(2));
   } else {
+    // 3. Commutes exceeding 120 km:
+    //    - The first tier (25 km to 120 km = 96 km) is paid at Rate 1.
+    //    - Any distance above 120 km (Total round-trip - 120 km) is paid at Rate 2.
     const tier1Km = limit - threshold;
     const tier2Km = effectiveKm - limit;
     const totalDeduction = (tier1Km * rate1) + (tier2Km * rate2);
