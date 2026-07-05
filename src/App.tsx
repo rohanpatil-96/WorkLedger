@@ -374,7 +374,7 @@ export default function App() {
     <div className="min-h-screen bg-brand-bg text-slate-800 flex flex-col md:flex-row font-sans selection:bg-brand-blue selection:text-white" id="main-application-container">
       
       {/* Mobile Top Header (hidden on desktop) */}
-      <div className="md:hidden bg-brand-slate border-b border-brand-slate p-4 flex justify-between items-center z-30 print:hidden shrink-0">
+      <div className="md:hidden bg-brand-slate border-b border-brand-slate pt-[calc(1rem+env(safe-area-inset-top,0px))] pb-4 px-4 flex justify-between items-center z-30 print:hidden shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="p-1 rounded-lg bg-slate-800 border border-slate-700/60 shadow-inner">
             <WorkLedgerLogo className="w-5 h-5" />
@@ -391,7 +391,7 @@ export default function App() {
 
       {/* Navigation Sidebar Drawer */}
       <aside className={`w-full md:w-64 bg-brand-slate flex flex-col z-20 shrink-0 print:hidden ${
-        mobileMenuOpen ? 'block' : 'hidden md:flex'
+        mobileMenuOpen ? 'block pb-[env(safe-area-inset-bottom,0px)]' : 'hidden md:flex'
       }`}>
         {/* Brand identity */}
         <div className="hidden md:flex items-center gap-2.5 px-6 py-6 border-b border-slate-700/65">
@@ -458,7 +458,7 @@ export default function App() {
       </aside>
 
       {/* Main layout contents area */}
-      <main className="flex-1 overflow-y-auto px-4 py-6 md:p-8 container mx-auto pr-4 print:p-0 print:bg-white print:text-black">
+      <main className="flex-1 overflow-y-auto px-4 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:p-8 container mx-auto pr-4 print:p-0 print:bg-white print:text-black">
         {/* Dynamic component routing view */}
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Breadcrumb Header for Desktop */}
