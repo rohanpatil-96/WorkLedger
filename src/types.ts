@@ -26,13 +26,13 @@ export function getCategoryDisplayName(cat: WorkCategory | string): string {
       return 'National holiday';
     case WorkCategory.Vacation:
     case 'Vacation':
-      return 'Paid vacation';
+      return 'Paid Holiday';
     case WorkCategory.Sick:
     case 'Sick day':
       return 'Sick day';
     case WorkCategory.UnpaidFerie:
     case 'Unpaid ferie':
-      return 'Unpaid vacation';
+      return 'Unpaid Holiday';
     case WorkCategory.OtherOffice:
     case 'Different office location':
       return 'Different office location';
@@ -58,7 +58,18 @@ export interface DayEntry {
   notes: string;
   location?: string; // custom office location for Different Office Location
   isBridgeDayTaken?: boolean; // flag indicating if the user took this bridge day as a paid vacation
+  isFeriefridag?: boolean; // flag indicating if this paid holiday is taken as a feriefridag (extra hours bank)
   createdUpdatedTimestamp: string;
+}
+
+export interface VacationCycle {
+  id: string;
+  startDate: string; // YYYY-MM-DD (Earning period start: Sep 1)
+  endDate: string; // YYYY-MM-DD (Holding/usage period end: Dec 31 of following year)
+  earningStartDate: string; // YYYY-MM-DD
+  earningEndDate: string; // YYYY-MM-DD
+  entitlementDays: number;
+  carriedOverDays: number;
 }
 
 export interface TaxRateSetting {
@@ -98,4 +109,7 @@ export interface UserSettings {
   theme?: 'light' | 'dark' | 'system';
   differentOfficeLocations?: DifferentOfficeLocation[];
   defaultOfficeLocationName?: string;
+  vacationYearlyEntitlementDays?: number; // default 25
+  vacationFeriefridageHours?: number; // default 37
+  vacationCycles?: VacationCycle[];
 }

@@ -82,6 +82,7 @@ export default function CalendarView({
   const [editNotes, setEditNotes] = useState('');
   const [editLocation, setEditLocation] = useState('');
   const [editIsBridgeDayTaken, setEditIsBridgeDayTaken] = useState(false);
+  const [editIsFeriefridag, setEditIsFeriefridag] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const monthsList = [
@@ -239,6 +240,7 @@ export default function CalendarView({
       setEditNotes(existing.notes || '');
       setEditLocation(existing.location || '');
       setEditIsBridgeDayTaken(existing.isBridgeDayTaken || false);
+      setEditIsFeriefridag(!!existing.isFeriefridag);
     } else {
       const isHoli = holidaysMap.has(dateStr);
       setEditCategory(isWeekend(dateStr) ? (isHoli ? WorkCategory.Holiday : WorkCategory.Vacation) : (isHoli ? WorkCategory.Holiday : WorkCategory.Office));
@@ -249,6 +251,7 @@ export default function CalendarView({
       setEditNotes(isHoli ? `Public Holiday: ${holidaysMap.get(dateStr)}` : '');
       setEditLocation('');
       setEditIsBridgeDayTaken(false);
+      setEditIsFeriefridag(false);
     }
   };
 
@@ -311,6 +314,7 @@ export default function CalendarView({
       notes: editNotes,
       location: editCategory === WorkCategory.OtherOffice ? editLocation : undefined,
       isBridgeDayTaken: isBridgeTaken ? true : undefined,
+      isFeriefridag: editCategory === WorkCategory.Vacation ? editIsFeriefridag : undefined,
       createdUpdatedTimestamp: new Date().toISOString()
     };
 
@@ -627,11 +631,11 @@ export default function CalendarView({
         <div className="grid grid-cols-3 gap-x-4 text-center border-b border-slate-100 pb-2.5">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 min-w-0">
             <div className="w-3 h-3 rounded bg-brand-green/15 border border-brand-green/25 shrink-0" />
-            <span className="font-semibold whitespace-normal break-words text-center sm:text-left leading-tight">Vacation</span>
+            <span className="font-semibold whitespace-normal break-words text-center sm:text-left leading-tight">Paid Holiday</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 min-w-0">
             <div className="w-3 h-3 rounded bg-slate-100 border border-slate-205 shrink-0" />
-            <span className="font-semibold whitespace-normal break-words text-center sm:text-left leading-tight" title="Unpaid vacation">Unpaid vacation</span>
+            <span className="font-semibold whitespace-normal break-words text-center sm:text-left leading-tight" title="Unpaid Holiday">Unpaid Holiday</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 min-w-0">
             <div className="w-3 h-3 rounded bg-purple-500/15 border border-purple-500/25 shrink-0" />
@@ -897,6 +901,21 @@ export default function CalendarView({
                 </select>
               </div>
 
+              {editCategory === WorkCategory.Vacation && (
+                <div className="flex items-center gap-2.5 bg-teal-50/50 border border-teal-200 p-3 rounded-lg animate-fade-in text-xs animate-scale-up">
+                  <input
+                    type="checkbox"
+                    id="edit-checkbox-is-feriefridag"
+                    checked={editIsFeriefridag}
+                    onChange={(e) => setEditIsFeriefridag(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                  />
+                  <label htmlFor="edit-checkbox-is-feriefridag" className="text-teal-955 font-bold select-none cursor-pointer">
+                    Deduct from Feriefridage hours instead of Vacation days
+                  </label>
+                </div>
+              )}
+
               {(editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) && (
                 <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <div>
@@ -1022,7 +1041,7 @@ export default function CalendarView({
                     className="w-4 h-4 text-amber-600 border-amber-350 rounded focus:ring-amber-500 cursor-pointer"
                   />
                   <label htmlFor="is-bridge-day-taken-checkbox" className="text-xs text-amber-800 font-semibold select-none cursor-pointer">
-                    This vacation is taken on a suggested bridge day (shows soft amber highlight)
+                    This paid holiday is taken on a suggested bridge day (shows soft amber highlight)
                   </label>
                 </div>
               )}

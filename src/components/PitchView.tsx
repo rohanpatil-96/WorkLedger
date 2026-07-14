@@ -28,11 +28,11 @@ export default function PitchView({ onNavigate }: PitchViewProps) {
     { id: 't1', text: 'Check the real-time Dashboard to inspect the automatic overtime balances & SKAT commute refund metrics.', completed: false, category: 'Dashboard' },
     { id: 't2', text: 'Go to Settings and change standard workday hours (e.g. from 7.4 to 8.0) or update round-trip distance, then see the changes propagate.', completed: false, category: 'Settings' },
     { id: 't3', text: 'Use the "Copy Last Workday" shortcut on the Quick Entry page to replicate previous logged workday attributes instantly.', completed: false, category: 'Quick Entry' },
-    { id: 't4', text: 'Perform a bulk-range log (e.g. log 2 weeks of Vacation) and note how the app skips weekends and automatically maps it.', completed: false, category: 'Quick Entry' },
+    { id: 't4', text: 'Perform a bulk-range log (e.g. log 2 weeks of Paid Holiday) and note how the app skips weekends and automatically maps it.', completed: false, category: 'Quick Entry' },
     { id: 't5', text: 'Go to the Interactive Calendar, click on a date, change its category to "WFH" or "Sick day", and see how colors & status update.', completed: false, category: 'Calendar' },
-    { id: 't6', text: 'Inspect the "Strategic Long Weekends Planner" below the calendar to discover optimal days for booking vacation.', completed: false, category: 'Calendar' },
+    { id: 't6', text: 'Inspect the "Strategic Long Weekends Planner" below the calendar to discover optimal days for booking holiday.', completed: false, category: 'Calendar' },
     { id: 't7', text: 'Go to the Reports page, filter by a specific month, and print or export the PDF time sheet to check the custom print-friendly layout.', completed: false, category: 'Reports' },
-    { id: 't8', text: 'Check how WFH or Vacation days do NOT accrue SKAT commuting refund km, proving the app\'s strict compliance guard rails.', completed: false, category: 'Dashboard' },
+    { id: 't8', text: 'Check how WFH or Paid Holiday days do NOT accrue SKAT commuting refund km, proving the app\'s strict compliance guard rails.', completed: false, category: 'Dashboard' },
     { id: 't9', text: 'Tap your profile name/avatar in the sidebar 5 times to reveal hidden developer tools, then trigger a demo re-seed of 2026 data.', completed: false, category: 'Settings' },
   ]);
 
@@ -51,11 +51,11 @@ WorkLedger automates and optimizes this entire tracking process. It is a secure,
 
 Salient Features:
 
-1. Smart Location Ledger: Effortlessly track your time across multiple working locations including Working from Office, WFH, Different Office Locations, Vacations, Unpaid Vacations, and Sick Days.
+1. Smart Location Ledger: Effortlessly track your time across multiple working locations including Working from Office, WFH, Different Office Locations, Paid Holidays, Unpaid Holidays, and Sick Days.
 2. Automatic Overtime Balance Engine: Automatically logs your expected versus actual hours based on your contract profile, tracking flextime and accrued overtime balances in real-time.
-3. Danish SKAT Commute Tax Deduction Optimizer: Automatically calculates transport deductibles based on official SKAT tax rates, strictly excluding work-from-home, vacation, public holidays, and sick days. Tax-audit compliant.
+3. Danish SKAT Commute Tax Deduction Optimizer: Automatically calculates transport deductibles based on official SKAT tax rates, strictly excluding work-from-home, paid holidays, public holidays, and sick days. Tax-audit compliant.
 4. Integrated Danish Public Holidays: Houses a pre-synchronized calendar that prevents double-claiming commute allowances on national non-working days.
-5. Strategic Long Weekends Planner: Provides a tactical advisor that highlights bridge-days near public holidays to maximize your consecutive vacation rest days.
+5. Strategic Long Weekends Planner: Provides a tactical advisor that highlights bridge-days near public holidays to maximize your consecutive holiday rest days.
 6. Bulk Logging & Rapid Copy Shortcuts: Speed up logging of recurring rotas by applying multi-day bulk entries or replicating previous workday details with a single click.
 7. Professional Chronological Reports: Generates elegant, print-ready PDF statements to serve as official ledger documentation for tax authorities, payroll, or audit trails.
 8. Hidden Developer Sandbox Tools: Tap your profile name in the left menu 5 times to reveal hidden developer settings and trigger realistic simulated 2026 data re-seeding instantly!
@@ -184,7 +184,7 @@ Your feedback is highly valued. Try out the tool and share your constructive tho
                       <h4 className="text-xs font-extrabold text-slate-900">The SKAT Compliance Guard</h4>
                     </div>
                     <p className="text-[11px] text-slate-700 font-semibold leading-relaxed">
-                      Only adds commute distances for physical office logs. Remote WFH, sick days, vacations, and national holidays are auto-filtered.
+                      Only adds commute distances for physical office logs. Remote WFH, sick days, paid holidays, and national holidays are auto-filtered.
                     </p>
                   </div>
 

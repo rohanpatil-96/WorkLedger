@@ -190,7 +190,7 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 relative overflow-hidden" id="overtime-total-balance-card">
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/5 rounded-full blur-xl pointer-events-none" />
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1 cursor-help" title="Negative overtime on Unpaid Vacation days reflects unworked standard hours per SKAT rules.">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1 cursor-help" title="Negative overtime on Unpaid Holiday days reflects unworked standard hours per SKAT rules.">
               Overtime Balance <span className="text-slate-400 text-[10px]">ⓘ</span>
             </span>
             <span className="bg-brand-blue/10 text-brand-blue p-1.5 rounded-lg">
@@ -216,7 +216,7 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
             <span>This month: <strong className="text-slate-800 font-mono font-bold">{monthOvertimeSum >= 0 ? `+${monthOvertimeSum.toFixed(2)}` : monthOvertimeSum.toFixed(2)}</strong></span>
           </div>
           <p className="text-[10px] text-slate-400 italic leading-snug border-t border-slate-100 pt-2.5">
-            * Negative overtime on Unpaid Vacation days reflects unworked standard hours per SKAT rules.
+            * Negative overtime on Unpaid Holiday days reflects unworked standard hours per SKAT rules.
           </p>
         </div>
 
@@ -321,7 +321,7 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
           <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60 space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
               <div className="w-2.5 h-2.5 rounded-full bg-brand-green" />
-              <span>Vacation</span>
+              <span>Paid Holiday</span>
             </div>
             <div className="font-mono text-base font-extrabold text-slate-800">{mVacation} <span className="text-xs font-medium text-slate-400">/ {yVacation}</span></div>
           </div>
@@ -443,7 +443,7 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
 
             {/* Chart 3: Overtime balance curves */}
             <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm space-y-4">
-              <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider flex items-center justify-between cursor-help" title="Negative overtime on Unpaid Vacation days reflects unworked standard hours per SKAT rules.">
+              <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider flex items-center justify-between cursor-help" title="Negative overtime on Unpaid Holiday days reflects unworked standard hours per SKAT rules.">
                 <span>Monthly Overtime Log ({selectedYear}) <span className="text-slate-400 text-[10px]">ⓘ</span></span>
                 <span className="text-[10px] text-brand-green font-mono font-bold">Credited</span>
               </h4>
@@ -489,7 +489,7 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
                 })}
               </div>
               <p className="text-[9px] text-slate-400 italic leading-snug">
-                * Negative overtime on Unpaid Vacation days reflects unworked standard hours per SKAT rules.
+                * Negative overtime on Unpaid Holiday days reflects unworked standard hours per SKAT rules.
               </p>
             </div>
           </div>

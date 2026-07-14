@@ -20,7 +20,8 @@ import {
   SlidersHorizontal,
   ChevronDown,
   ChevronUp,
-  X
+  X,
+  AlertTriangle
 } from 'lucide-react';
 
 interface EntriesViewProps {
@@ -54,6 +55,8 @@ export default function EntriesView({
   const [editBreak, setEditBreak] = useState(30);
   const [editOverride, setEditOverride] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [editIsFeriefridag, setEditIsFeriefridag] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
   // Extract list of existing weeks dynamically
   const availableWeeks = useMemo(() => {
@@ -132,6 +135,7 @@ export default function EntriesView({
     setEditBreak(entry.breakMinutes ?? 30);
     setEditOverride(entry.overriddenTotalHours !== undefined ? String(entry.overriddenTotalHours) : '');
     setEditNotes(entry.notes || '');
+    setEditIsFeriefridag(!!entry.isFeriefridag);
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -175,6 +179,7 @@ export default function EntriesView({
       overriddenTotalHours: editOverride !== '' ? parseFloat(editOverride) : undefined,
       finalCountedHours: finalHours,
       overtime: ot,
+      isFeriefridag: editCategory === WorkCategory.Vacation ? editIsFeriefridag : undefined,
       notes: editNotes,
       createdUpdatedTimestamp: new Date().toISOString()
     };
@@ -465,9 +470,7 @@ export default function EntriesView({
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm(`Remove log for date: ${entry.date}?`)) {
-                              onDeleteEntry(entry.date);
-                            }
+                            setEntryToDelete(entry.date);
                           }}
                           className="bg-rose-50 hover:bg-rose-100 text-rose-700 p-1.5 border border-rose-250/60 rounded-lg transition cursor-pointer"
                           title="Delete Entry"
@@ -523,6 +526,21 @@ export default function EntriesView({
                   ))}
                 </select>
               </div>
+
+              {editCategory === WorkCategory.Vacation && (
+                <div className="flex items-center gap-2.5 bg-teal-50/50 border border-teal-200 p-3 rounded-lg animate-fade-in text-xs animate-scale-up">
+                  <input
+                    type="checkbox"
+                    id="edit-entry-checkbox-is-feriefridag"
+                    checked={editIsFeriefridag}
+                    onChange={(e) => setEditIsFeriefridag(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                  />
+                  <label htmlFor="edit-entry-checkbox-is-feriefridag" className="text-teal-955 font-bold select-none cursor-pointer">
+                    Deduct from Feriefridage hours instead of Vacation days
+                  </label>
+                </div>
+              )}
 
               {(editCategory === WorkCategory.Office || editCategory === WorkCategory.OtherOffice || editCategory === WorkCategory.WFH) && (
                 <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
@@ -608,6 +626,44 @@ export default function EntriesView({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {entryToDelete && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in font-sans" id="delete-entry-confirm-modal">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="bg-rose-100 text-rose-800 p-2.5 rounded-full shrink-0">
+                <AlertTriangle className="w-5 h-5 text-rose-600" />
+              </div>
+              <div className="flex-1 space-y-1">
+                <h4 className="text-sm font-extrabold text-slate-900 tracking-tight">Delete Working Log Entry?</h4>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Are you sure you want to remove the log for <strong className="text-slate-800">{entryToDelete}</strong>? This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setEntryToDelete(null)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteEntry(entryToDelete);
+                  setEntryToDelete(null);
+                }}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl transition cursor-pointer shadow-sm"
+              >
+                Delete Entry
+              </button>
+            </div>
           </div>
         </div>
       )}

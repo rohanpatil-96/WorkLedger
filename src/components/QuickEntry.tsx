@@ -80,6 +80,7 @@ export default function QuickEntry({
   const [location, setLocation] = useState<string>('');
   const [overriddenHours, setOverriddenHours] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
+  const [isFeriefridag, setIsFeriefridag] = useState<boolean>(false);
 
   // Bulk Apply state
   const [showBulkModal, setShowBulkModal] = useState(false);
@@ -87,6 +88,7 @@ export default function QuickEntry({
   const [bulkEnd, setBulkEnd] = useState<string>(todayStr);
   const [bulkCategory, setBulkCategory] = useState<WorkCategory>(WorkCategory.Vacation);
   const [bulkNotes, setBulkNotes] = useState<string>('');
+  const [bulkIsFeriefridag, setBulkIsFeriefridag] = useState<boolean>(false);
 
   // Toast notifications state
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' | 'error' } | null>(null);
@@ -117,12 +119,14 @@ export default function QuickEntry({
       setLocation(existingEntry.location || '');
       setOverriddenHours(existingEntry.overriddenTotalHours !== undefined ? String(existingEntry.overriddenTotalHours) : '');
       setNotes(existingEntry.notes || '');
+      setIsFeriefridag(!!existingEntry.isFeriefridag);
     } else {
       setCategory(isWeekend(date) ? WorkCategory.Vacation : WorkCategory.Office);
       const locList = settings.differentOfficeLocations || [];
       setLocation(locList.length === 1 ? locList[0].name : '');
       setOverriddenHours('');
       setNotes('');
+      setIsFeriefridag(false);
     }
   }, [date, existingEntry, settings.differentOfficeLocations]);
 
@@ -173,6 +177,7 @@ export default function QuickEntry({
       overriddenTotalHours: overriddenHours !== '' ? parseFloat(overriddenHours) : undefined,
       finalCountedHours: finalWorkingHours,
       overtime: currentOvertime,
+      isFeriefridag: category === WorkCategory.Vacation ? isFeriefridag : undefined,
       notes,
       createdUpdatedTimestamp: new Date().toISOString()
     };
@@ -396,6 +401,7 @@ export default function QuickEntry({
           calculatedHours: calcH,
           finalCountedHours: calcH,
           overtime: ot,
+          isFeriefridag: bulkCategory === WorkCategory.Vacation ? bulkIsFeriefridag : undefined,
           notes: bulkNotes || 'Bulk range entry',
           createdUpdatedTimestamp: new Date().toISOString()
         });
@@ -600,8 +606,8 @@ export default function QuickEntry({
                   }
                   else if (cat === WorkCategory.WFH) shortName = 'WFH';
                   else if (cat === WorkCategory.OtherOffice) shortName = 'Diff. Office Location';
-                  else if (cat === WorkCategory.Vacation) shortName = 'Vacation';
-                  else if (cat === WorkCategory.UnpaidFerie) shortName = 'Unpaid vacation';
+                  else if (cat === WorkCategory.Vacation) shortName = 'Paid Holiday';
+                  else if (cat === WorkCategory.UnpaidFerie) shortName = 'Unpaid Holiday';
                   else if (cat === WorkCategory.Sick) shortName = 'Sick day';
                   else if (cat === WorkCategory.Holiday) shortName = 'National holiday';
 
@@ -628,7 +634,26 @@ export default function QuickEntry({
               </div>
             </div>
 
-
+            {/* Optional Feriefridag switch if Vacation is selected */}
+            {category === WorkCategory.Vacation && (
+              <div className="bg-teal-50 border border-teal-200 p-4 rounded-xl space-y-2 animate-fade-in text-xs animate-scale-up" id="feriefridag-field-container">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="checkbox-is-feriefridag"
+                    checked={isFeriefridag}
+                    onChange={(e) => setIsFeriefridag(e.target.checked)}
+                    className="w-4.5 h-4.5 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                  />
+                  <label htmlFor="checkbox-is-feriefridag" className="text-teal-950 font-extrabold select-none cursor-pointer">
+                    Deduct from Feriefridage hours instead of Vacation days
+                  </label>
+                </div>
+                <p className="text-[10px] text-teal-800 leading-normal">
+                  If selected, this day will be logged as <strong>Feriefridag</strong> and deducted from your <strong>Feriefridage hours bank</strong> (by {settings.standardWorkdayHours} hours) instead of the standard day-based vacation cycles.
+                </p>
+              </div>
+            )}
 
             {/* Hours input depending on category */}
             {(category === WorkCategory.Office || category === WorkCategory.OtherOffice || category === WorkCategory.WFH) ? (
@@ -881,10 +906,10 @@ export default function QuickEntry({
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
             <h4 className="text-sm font-bold text-brand-slate flex items-center gap-2">
               <CalendarDays className="text-brand-blue w-4 h-4" />
-              <span>Bulk Vacation / Remote</span>
+              <span>Bulk Holiday / Remote</span>
             </h4>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Away on vacation or taking a parental block? Log multiple business days instantly.
+              Away on paid holiday or taking a parental block? Log multiple business days instantly.
             </p>
             <button
               type="button"
@@ -944,18 +969,33 @@ export default function QuickEntry({
                 >
                   {Object.values(WorkCategory).map((cat) => (
                     <option key={cat} value={cat}>
-                      {cat.replace('Working ', '')}
+                      {getCategoryDisplayName(cat)}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {bulkCategory === WorkCategory.Vacation && (
+                <div className="flex items-center gap-2.5 bg-teal-50/50 border border-teal-200 p-3 rounded-lg animate-fade-in text-xs">
+                  <input
+                    type="checkbox"
+                    id="bulk-checkbox-is-feriefridag"
+                    checked={bulkIsFeriefridag}
+                    onChange={(e) => setBulkIsFeriefridag(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                  />
+                  <label htmlFor="bulk-checkbox-is-feriefridag" className="text-teal-950 font-bold select-none cursor-pointer">
+                    Deduct from Feriefridage hours instead of Vacation days
+                  </label>
+                </div>
+              )}
 
               <div>
                 <label className="block text-slate-500 mb-1">Notes (Optional)</label>
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="e.g. Summer vacation Block, Sick spell"
+                    placeholder="e.g. Summer holiday block, Sick spell"
                     value={bulkNotes}
                     onChange={(e) => setBulkNotes(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-2.5 pr-8 py-2 text-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-brand-blue"

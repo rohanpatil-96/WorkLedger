@@ -314,10 +314,10 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                     { text: 'Office', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
                     { text: 'WFH', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
                     { text: 'Diff Branch', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
-                    { text: 'Vacation', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
+                    { text: 'Paid Holiday', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
                     { text: 'Sick Day', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
                     { text: 'Holiday', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' },
-                    { text: 'Unpaid', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' }
+                    { text: 'Unpaid Holiday', fontSize: 7, bold: true, color: '#8C7C6B', alignment: 'center', fillColor: '#FAF8F5' }
                   ],
                   [
                     { text: `${officeDaysCount} d`, fontSize: 10, bold: true, color: '#2C3639', alignment: 'center', fillColor: '#FAF8F5' },
@@ -408,7 +408,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                         {
                           text: [
                             { text: 'Exclusions: ', bold: true, italic: true },
-                            { text: 'Saturdays/Sundays, Sick spells, Vacation, non-commute remote locations, and Work-from-Home days.', italic: true }
+                            { text: 'Saturdays/Sundays, Sick spells, Paid Holiday, non-commute remote locations, and Work-from-Home days.', italic: true }
                           ]
                         }
                       ],
@@ -615,53 +615,6 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
         </div>
       </div>
 
-      {/* Primary Export Actions Panel */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:hidden" id="reports-quick-actions-bar">
-        <button
-          onClick={handleExportCSV}
-          className="bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition text-left text-xs group shadow-sm"
-        >
-          <div className="p-2.5 rounded-xl bg-brand-blue/10 text-brand-blue group-hover:bg-brand-blue/20 transition">
-            <Download className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="font-bold text-brand-slate block">Download Raw CSV</span>
-            <span className="text-[10px] text-slate-500">Preserves Danish characters</span>
-          </div>
-        </button>
-
-        <button
-          onClick={handleCopyTSV}
-          className="bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition text-left text-xs group shadow-sm"
-        >
-          <div className="p-2.5 rounded-xl bg-emerald-50 text-brand-green group-hover:bg-emerald-105/70 transition">
-            {copiedStatus ? <Check className="w-5 h-5 text-emerald-600" /> : <Copy className="w-5 h-5 text-emerald-700" />}
-          </div>
-          <div>
-            <span className="font-bold text-brand-slate block">{copiedStatus ? 'Copied To Clipboard!' : 'Copy to Google Sheets'}</span>
-            <span className="text-[10px] text-slate-505">Clipboard-ready tab data</span>
-          </div>
-        </button>
-
-        <button
-          onClick={handlePrintPDF}
-          disabled={generatingPdf}
-          className={`bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition text-left text-xs group shadow-sm ${generatingPdf ? 'opacity-70 cursor-not-allowed' : ''}`}
-        >
-          <div className="p-2.5 rounded-xl bg-brand-peach/10 text-amber-700 group-hover:bg-brand-peach/20 transition">
-            <Printer className={`w-5 h-5 ${generatingPdf ? 'animate-spin' : ''}`} />
-          </div>
-          <div>
-            <span className="font-bold text-brand-slate block">
-              {generatingPdf ? 'Generating PDF...' : 'Print PDF Statement'}
-            </span>
-            <span className="text-[10px] text-slate-505">
-              {generatingPdf ? 'Assembling document...' : 'Pre-styled tax audit page'}
-            </span>
-          </div>
-        </button>
-      </div>
-
       {/* Printable Report Canvas Frame */}
       <div
         className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm space-y-7"
@@ -744,7 +697,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 relative overflow-hidden print-inverted-window print-avoid-break">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
                       <div className="flex justify-between items-start">
-                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1 cursor-help" title="Negative overtime on Unpaid Vacation days reflects unworked standard hours per SKAT rules.">
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1 cursor-help" title="Negative overtime on Unpaid Holiday days reflects unworked standard hours per SKAT rules.">
                           Overtime Summary <span className="text-slate-400 text-[10px]">ⓘ</span>
                         </span>
                         <span className="bg-emerald-500/10 text-emerald-600 p-1.5 rounded-lg shrink-0">
@@ -758,7 +711,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                         <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Overtime balance</span>
                       </div>
                       <p className="text-[10px] text-slate-400 italic leading-snug border-t border-slate-100 pt-2">
-                        * Negative overtime on Unpaid Vacation days reflects unworked standard hours per SKAT rules.
+                        * Negative overtime on Unpaid Holiday days reflects unworked standard hours per SKAT rules.
                       </p>
                     </div>
 
@@ -838,7 +791,7 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                       <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60 space-y-1 shadow-xs print-inner-card">
                         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
                           <div className="w-2.5 h-2.5 rounded-full bg-brand-green shrink-0" />
-                          <span className="truncate">Vacation</span>
+                          <span className="truncate">Paid Holiday</span>
                         </div>
                         <div className="font-mono text-base font-extrabold text-slate-800 print-text-primary">
                           {vacationDaysCount} <span className="text-xs font-medium text-slate-400">days</span>
@@ -894,8 +847,55 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
                     <li className="font-sans">Portion 25 - 120 km rate is: <strong className="text-[#2C3639] font-bold font-sans">{activeTaxSetting.rate1} DKK/km</strong>.</li>
                     <li className="font-sans">Portion above 120 km rate is: <strong className="text-[#2C3639] font-bold font-sans">{activeTaxSetting.rate2} DKK/km</strong>.</li>
                     <li className="font-sans">Different office locations: <strong className="text-[#2C3639] font-bold font-sans">Included dynamically</strong> if enabled in settings, using their specific round-trip distances.</li>
-                    <li className="font-sans">Exclusions: Saturdays/Sundays, Sick spells, Vacation, non-commute remote locations, and Work-from-Home days.</li>
+                    <li className="font-sans">Exclusions: Saturdays/Sundays, Sick spells, Paid Holiday, non-commute remote locations, and Work-from-Home days.</li>
                   </ul>
+                </div>
+
+                {/* Primary Export Actions Panel */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:hidden my-6" id="reports-quick-actions-bar">
+                  <button
+                    onClick={handleExportCSV}
+                    className="bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition text-left text-xs group shadow-sm"
+                  >
+                    <div className="p-2.5 rounded-xl bg-brand-blue/10 text-brand-blue group-hover:bg-brand-blue/20 transition">
+                      <Download className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-brand-slate block">Download Raw CSV</span>
+                      <span className="text-[10px] text-slate-500">Preserves Danish characters</span>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={handleCopyTSV}
+                    className="bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition text-left text-xs group shadow-sm"
+                  >
+                    <div className="p-2.5 rounded-xl bg-emerald-50 text-brand-green group-hover:bg-emerald-100 transition">
+                      {copiedStatus ? <Check className="w-5 h-5 text-emerald-600" /> : <Copy className="w-5 h-5 text-emerald-700" />}
+                    </div>
+                    <div>
+                      <span className="font-bold text-brand-slate block">{copiedStatus ? 'Copied To Clipboard!' : 'Copy to Google Sheets'}</span>
+                      <span className="text-[10px] text-slate-500">Clipboard-ready tab data</span>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={handlePrintPDF}
+                    disabled={generatingPdf}
+                    className={`bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition text-left text-xs group shadow-sm ${generatingPdf ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  >
+                    <div className="p-2.5 rounded-xl bg-brand-peach/10 text-amber-700 group-hover:bg-brand-peach/20 transition">
+                      <Printer className={`w-5 h-5 ${generatingPdf ? 'animate-spin' : ''}`} />
+                    </div>
+                    <div>
+                      <span className="font-bold text-brand-slate block">
+                        {generatingPdf ? 'Generating PDF...' : 'Print PDF Statement'}
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        {generatingPdf ? 'Assembling document...' : 'Pre-styled tax audit page'}
+                      </span>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Items tabular statement report list */}

@@ -8,6 +8,7 @@ import { Preferences } from '@capacitor/preferences';
 import { DayEntry, WorkCategory, UserSettings } from './types';
 import { generateSeedData } from './utils/calculations';
 import { getDanishHolidays } from './utils/holidays';
+import { generateDefaultCycles } from './utils/vacationBank';
 
 // Subcomponents
 import QuickEntry from './components/QuickEntry';
@@ -17,6 +18,7 @@ import EntriesView from './components/EntriesView';
 import ReportsView from './components/ReportsView';
 import SettingsView from './components/SettingsView';
 import PitchView from './components/PitchView';
+import VacationView from './components/VacationView';
 
 // Icons
 import {
@@ -31,7 +33,8 @@ import {
   X,
   HelpCircle,
   Briefcase,
-  Sparkles
+  Sparkles,
+  Palmtree
 } from 'lucide-react';
 
 export function WorkLedgerLogo({ className = "w-5 h-5" }: { className?: string }) {
@@ -75,12 +78,17 @@ export function WorkLedgerLogo({ className = "w-5 h-5" }: { className?: string }
 
 const ENTRIES_CACHE_KEY = 'danish_tracker_workday_entries';
 const SETTINGS_CACHE_KEY = 'danish_tracker_workday_settings';
+const VACATION_CYCLES_CACHE_KEY = 'danish_tracker_vacation_cycles';
 
 export default function App() {
   const [entries, setEntries] = useState<DayEntry[]>([]);
   const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'calendar' | 'entries' | 'reports' | 'settings' | 'pitch'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'calendar' | 'entries' | 'reports' | 'vacation' | 'settings' | 'pitch'>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Vacation Bank onboarding states
+  const [showVacationOnboardingPrompt, setShowVacationOnboardingPrompt] = useState(false);
+  const [onboardingDays, setOnboardingDays] = useState(25);
 
   // Debug Mode state
   const [debugTaps, setDebugTaps] = useState(0);
@@ -141,6 +149,11 @@ export default function App() {
       setSettings(finalSettings);
       setEntries(finalEntries);
 
+      // Check if vacation bank is configured. If not, trigger onboarding
+      if (finalSettings.vacationYearlyEntitlementDays === undefined) {
+        setShowVacationOnboardingPrompt(true);
+      }
+
       // On first load, if userName & activeCompany is empty, automatically navigate to Settings
       if (!finalSettings.userName && !finalSettings.activeCompany) {
         setActiveTab('settings');
@@ -157,6 +170,26 @@ export default function App() {
 
     loadCachedData();
   }, []);
+
+  const handleCompleteVacationOnboarding = async () => {
+    if (!settings) return;
+    const stdHours = settings.standardWorkdayHours || 7.4;
+    const defaultFeriefridageHours = Math.round((stdHours / 7.4) * 37 * 10) / 10;
+    const generatedCycles = generateDefaultCycles(new Date().getFullYear(), onboardingDays);
+
+    const updatedSettings: UserSettings = {
+      ...settings,
+      vacationYearlyEntitlementDays: onboardingDays,
+      vacationFeriefridageHours: defaultFeriefridageHours,
+      vacationCycles: generatedCycles
+    };
+
+    setSettings(updatedSettings);
+    setShowVacationOnboardingPrompt(false);
+
+    await Preferences.set({ key: SETTINGS_CACHE_KEY, value: JSON.stringify(updatedSettings) });
+    await Preferences.set({ key: VACATION_CYCLES_CACHE_KEY, value: JSON.stringify(generatedCycles) });
+  };
 
   // Enforce the unified premium color theme across all devices
   useEffect(() => {
@@ -243,6 +276,9 @@ export default function App() {
   const handleUpdateSettings = async (updatedSettings: UserSettings) => {
     setSettings(updatedSettings);
     await Preferences.set({ key: SETTINGS_CACHE_KEY, value: JSON.stringify(updatedSettings) });
+    if (updatedSettings.vacationCycles) {
+      await Preferences.set({ key: VACATION_CYCLES_CACHE_KEY, value: JSON.stringify(updatedSettings.vacationCycles) });
+    }
   };
 
   const handleClearAndReseed = async () => {
@@ -298,6 +334,11 @@ export default function App() {
     await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify(synthetic2026) });
   };
 
+  const handleEraseAllEntries = async () => {
+    setEntries([]);
+    await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify([]) });
+  };
+
   // Render Loader if first-time load pending
   if (!settings) {
     return (
@@ -344,12 +385,24 @@ export default function App() {
         );
       case 'reports':
         return <ReportsView entries={entries} settings={settings} />;
+      case 'vacation':
+        return (
+          <VacationView
+            entries={entries}
+            settings={settings}
+            onUpdateSettings={handleUpdateSettings}
+            onNavigateToSettings={() => setActiveTab('settings')}
+          />
+        );
       case 'settings':
         return (
           <SettingsView
             settings={settings}
+            entries={entries}
             onUpdateSettings={handleUpdateSettings}
+            onBulkSaveEntries={handleBulkSaveEntries}
             onClearAndReseed={handleClearAndReseed}
+            onEraseAllEntries={handleEraseAllEntries}
             isDebugUnlocked={isDebugUnlocked}
           />
         );
@@ -362,8 +415,9 @@ export default function App() {
     { id: 'home', label: 'Quick Entry / Home', icon: Clock },
     { id: 'dashboard', label: 'Dashboard Overview', icon: LayoutDashboard },
     { id: 'calendar', label: 'Interactive Calendar', icon: CalendarDays },
+    { id: 'vacation', label: 'Vacation Bank', icon: Palmtree },
     { id: 'entries', label: 'Historical Working Logs', icon: FileSpreadsheet },
-    { id: 'reports', label: 'Tax & PDF Reports', icon: FileText },
+    { id: 'reports', label: 'Tax & Reports', icon: FileText },
     { id: 'settings', label: 'Workday Settings', icon: Sliders },
     { id: 'pitch', label: 'Share & Tester Guide', icon: Sparkles }
   ] as const;
@@ -482,6 +536,73 @@ export default function App() {
         <div className="fixed bottom-6 right-6 bg-slate-900 border border-slate-700 text-white font-semibold text-xs px-4 py-3.5 rounded-xl shadow-2xl z-50 flex items-center gap-2.5 animate-bounce select-none">
           <Sparkles className="w-4.5 h-4.5 text-amber-400 animate-pulse" />
           <span>Developer Tools unlocked in workday settings!</span>
+        </div>
+      )}
+
+      {/* Vacation Onboarding Modal */}
+      {showVacationOnboardingPrompt && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-6 text-center">
+            <div className="w-16 h-16 bg-brand-blue/10 text-brand-blue rounded-2xl flex items-center justify-center mx-auto text-3xl">
+              🌴
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-slate-800 tracking-tight">Configure Your Vacation Bank</h3>
+              <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                Welcome to the new Vacation Bank! Please configure your yearly entitlement to activate Danish cycle tracking.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="text-left">
+                <label className="block text-[10px] text-slate-500 font-bold mb-1.5 uppercase tracking-wider">
+                  Yearly Vacation Days
+                </label>
+                <div className="flex gap-2">
+                  {[25, 30, 35].map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setOnboardingDays(days)}
+                      className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                        onboardingDays === days
+                          ? 'bg-brand-blue text-white border-brand-blue shadow-md'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {days} Days {days === 25 ? '(Std)' : ''}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-left">
+                <label className="block text-[10px] text-slate-500 font-bold mb-1.5 uppercase tracking-wider">
+                  Or Custom Amount
+                </label>
+                <input
+                  type="number"
+                  value={onboardingDays}
+                  onChange={(e) => setOnboardingDays(Math.max(1, parseInt(e.target.value, 10) || 25))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+                  min="1"
+                  max="100"
+                />
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 text-left p-3.5 rounded-xl text-[10px] text-amber-800 leading-relaxed font-semibold">
+                ℹ️ <strong>Danish standard minimum:</strong> 5 weeks = 25 days. Some contracts or collective agreements offer 30 or 35 days (feriefridage excluded).
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCompleteVacationOnboarding}
+              className="w-full bg-brand-blue hover:bg-blue-600 text-white font-extrabold py-3 rounded-xl transition-all cursor-pointer text-xs shadow-md shadow-brand-blue/10"
+            >
+              Activate Vacation Bank
+            </button>
+          </div>
         </div>
       )}
 
