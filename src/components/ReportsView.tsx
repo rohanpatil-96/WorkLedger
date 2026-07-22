@@ -31,9 +31,12 @@ import pdfMake from 'pdfmake/build/pdfmake';
 // @ts-ignore
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 
-// Register standard fonts
-if (pdfMake && pdfFonts && (pdfFonts as any).pdfMake) {
-  (pdfMake as any).vfs = (pdfFonts as any).pdfMake.vfs;
+// Register standard fonts with robust fallback for different bundler/vfs_fonts module export formats
+if (pdfMake && pdfFonts) {
+  const vfs = (pdfFonts as any).pdfMake?.vfs || (pdfFonts as any).vfs || pdfFonts;
+  if (vfs) {
+    (pdfMake as any).vfs = vfs;
+  }
 }
 
 interface ReportsViewProps {

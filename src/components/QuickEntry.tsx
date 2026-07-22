@@ -70,7 +70,10 @@ export default function QuickEntry({
   onBulkSaveEntries
 }: QuickEntryProps) {
   const deviceLocation = React.useMemo(() => detectDeviceLocation(), []);
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
 
   const [date, setDate] = useState<string>(todayStr);
   const [category, setCategory] = useState<WorkCategory>(WorkCategory.Office);
@@ -81,6 +84,7 @@ export default function QuickEntry({
   const [overriddenHours, setOverriddenHours] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [isFeriefridag, setIsFeriefridag] = useState<boolean>(false);
+  const [vacationEndDate, setVacationEndDate] = useState<string>('');
 
   // Bulk Apply state
   const [showBulkModal, setShowBulkModal] = useState(false);
@@ -128,7 +132,14 @@ export default function QuickEntry({
       setNotes('');
       setIsFeriefridag(false);
     }
+    setVacationEndDate('');
   }, [date, existingEntry, settings.differentOfficeLocations]);
+
+  useEffect(() => {
+    if (category !== WorkCategory.Vacation) {
+      setVacationEndDate('');
+    }
+  }, [category]);
 
   // Auto-select first different office location if Different Office Location selected and field is empty
   useEffect(() => {
@@ -157,6 +168,57 @@ export default function QuickEntry({
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // If it is a Vacation and we have a valid end date for the range
+    if (category === WorkCategory.Vacation && vacationEndDate && vacationEndDate > date) {
+      const [sy, sm, sd] = date.split('-').map(Number);
+      const start = new Date(Date.UTC(sy, sm - 1, sd));
+      const [ey, em, ed] = vacationEndDate.split('-').map(Number);
+      const end = new Date(Date.UTC(ey, em - 1, ed));
+      const vacationList: DayEntry[] = [];
+
+      const current = new Date(start.getTime());
+      while (current <= end) {
+        const yr = current.getUTCFullYear();
+        const mo = String(current.getUTCMonth() + 1).padStart(2, '0');
+        const dy = String(current.getUTCDate()).padStart(2, '0');
+        const dStr = `${yr}-${mo}-${dy}`;
+
+        // Only log if not weekend (vacation days are business day credits)
+        if (!isWeekend(dStr)) {
+          vacationList.push({
+            date: dStr,
+            weekday: getWeekdayName(dStr),
+            weekNumber: getWeekNumber(dStr),
+            month: current.getUTCMonth() + 1,
+            year: current.getUTCFullYear(),
+            category,
+            calculatedHours: settings.standardWorkdayHours,
+            finalCountedHours: settings.standardWorkdayHours,
+            overtime: 0,
+            isFeriefridag: isFeriefridag ? true : undefined,
+            notes: notes || 'Paid holiday vacation period',
+            createdUpdatedTimestamp: new Date().toISOString()
+          });
+        }
+        current.setUTCDate(current.getUTCDate() + 1);
+      }
+
+      if (vacationList.length > 0) {
+        onBulkSaveEntries(vacationList);
+        setToastMessage({
+          text: `Successfully logged ${vacationList.length} vacation days from ${formatOrdinalDate(date)} to ${formatOrdinalDate(vacationEndDate)} ✅`,
+          type: 'success'
+        });
+        setVacationEndDate('');
+      } else {
+        setToastMessage({
+          text: 'No weekdays found in the selected vacation range to log.',
+          type: 'error'
+        });
+      }
+      return;
+    }
 
     const d = new Date(date);
     const yyyy = d.getFullYear();
@@ -304,17 +366,18 @@ export default function QuickEntry({
 
   // Bulk fill current week with standards
   const handleQuickFillWeek = () => {
-    const currDate = new Date(date);
-    const dayOfWeek = currDate.getDay(); 
+    const [cy, cm, cd] = date.split('-').map(Number);
+    const currDate = new Date(Date.UTC(cy, cm - 1, cd));
+    const dayOfWeek = currDate.getUTCDay(); 
     const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(currDate);
-    monday.setDate(monday.getDate() + diffToMonday);
+    const monday = new Date(currDate.getTime());
+    monday.setUTCDate(monday.getUTCDate() + diffToMonday);
 
     const weekEntries: DayEntry[] = [];
     for (let i = 0; i < 5; i++) {
-      const d = new Date(monday);
-      d.setDate(d.getDate() + i);
-      const tempDateStr = d.toISOString().split('T')[0];
+      const d = new Date(monday.getTime());
+      d.setUTCDate(d.getUTCDate() + i);
+      const tempDateStr = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 
       const exists = entries.find((e) => e.date === tempDateStr);
       if (exists) continue;
@@ -362,13 +425,15 @@ export default function QuickEntry({
     e.preventDefault();
     if (bulkStart > bulkEnd) return;
 
-    const start = new Date(bulkStart);
-    const end = new Date(bulkEnd);
+    const [sy, sm, sd] = bulkStart.split('-').map(Number);
+    const start = new Date(Date.UTC(sy, sm - 1, sd));
+    const [ey, em, ed] = bulkEnd.split('-').map(Number);
+    const end = new Date(Date.UTC(ey, em - 1, ed));
     const bulkList: DayEntry[] = [];
 
-    const current = new Date(start);
+    const current = new Date(start.getTime());
     while (current <= end) {
-      const dStr = current.toISOString().split('T')[0];
+      const dStr = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, '0')}-${String(current.getUTCDate()).padStart(2, '0')}`;
       const isWk = isWeekend(dStr);
 
       if (!isWk) {
@@ -405,7 +470,7 @@ export default function QuickEntry({
           createdUpdatedTimestamp: new Date().toISOString()
         });
       }
-      current.setDate(current.getDate() + 1);
+      current.setUTCDate(current.getUTCDate() + 1);
     }
 
     if (bulkList.length > 0) {
@@ -423,10 +488,15 @@ export default function QuickEntry({
   const missingWeekdayEntries = (() => {
     const missing: string[] = [];
     const today = new Date();
+    const todayY = today.getFullYear();
+    const todayM = today.getMonth();
+    const todayD = today.getDate();
+    const localTodayUTC = new Date(Date.UTC(todayY, todayM, todayD));
+
     for (let i = 1; i <= 7; i++) {
-      const past = new Date();
-      past.setDate(today.getDate() - i);
-      const pastStr = past.toISOString().split('T')[0];
+      const past = new Date(localTodayUTC.getTime());
+      past.setUTCDate(past.getUTCDate() - i);
+      const pastStr = `${past.getUTCFullYear()}-${String(past.getUTCMonth() + 1).padStart(2, '0')}-${String(past.getUTCDate()).padStart(2, '0')}`;
       if (!isWeekend(pastStr)) {
         const found = entries.some((e) => e.date === pastStr);
         if (!found) {
@@ -654,6 +724,65 @@ export default function QuickEntry({
               </div>
             )}
 
+            {/* Vacation End Period Section */}
+            {category === WorkCategory.Vacation && (
+              <div className="bg-brand-blue/5 border border-brand-blue/25 p-4 rounded-xl space-y-3 animate-fade-in text-xs" id="vacation-end-period-container">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-brand-slate uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <CalendarDays className="w-4 h-4 text-brand-blue" />
+                    <span>Vacation Period End (Optional)</span>
+                  </h4>
+                  {vacationEndDate && (
+                    <button
+                      type="button"
+                      onClick={() => setVacationEndDate('')}
+                      className="text-xs text-rose-600 hover:text-rose-800 hover:underline font-semibold cursor-pointer"
+                    >
+                      Clear End Date
+                    </button>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 leading-normal">
+                  Want to log multiple days of vacation at once? Select an end date below. All business days (weekdays) between the selected start and end dates will be logged as Paid Holiday with any notes added.
+                </p>
+                <div className="w-full">
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                    Vacation End Date (Inclusive)
+                  </label>
+                  <input
+                    type="date"
+                    value={vacationEndDate}
+                    onChange={(e) => setVacationEndDate(e.target.value)}
+                    min={date}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 font-mono"
+                  />
+                </div>
+                {vacationEndDate && vacationEndDate > date && (() => {
+                  const [sy, sm, sd] = date.split('-').map(Number);
+                  const start = new Date(Date.UTC(sy, sm - 1, sd));
+                  const [ey, em, ed] = vacationEndDate.split('-').map(Number);
+                  const end = new Date(Date.UTC(ey, em - 1, ed));
+                  let count = 0;
+                  const current = new Date(start.getTime());
+                  while (current <= end) {
+                    const yr = current.getUTCFullYear();
+                    const mo = String(current.getUTCMonth() + 1).padStart(2, '0');
+                    const dy = String(current.getUTCDate()).padStart(2, '0');
+                    const dStr = `${yr}-${mo}-${dy}`;
+                    if (!isWeekend(dStr)) {
+                      count++;
+                    }
+                    current.setUTCDate(current.getUTCDate() + 1);
+                  }
+                  return (
+                    <p className="text-[11px] text-brand-blue font-semibold">
+                      This will log <strong>{count} vacation days</strong> (excluding weekends) from {formatOrdinalDate(date)} to {formatOrdinalDate(vacationEndDate)}.
+                    </p>
+                  );
+                })()}
+              </div>
+            )}
+
             {/* Hours input depending on category */}
             {(category === WorkCategory.Office || category === WorkCategory.OtherOffice || category === WorkCategory.WFH) ? (
               <div className="space-y-4 p-4 bg-slate-50/70 rounded-xl border border-slate-200">
@@ -853,7 +982,13 @@ export default function QuickEntry({
               className="w-full bg-brand-blue hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-md text-xs flex items-center justify-center gap-2 border border-brand-blue cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>{existingEntry ? 'Save and Update Entry' : 'Log Daily Entry'}</span>
+              <span>{
+                (category === WorkCategory.Vacation && vacationEndDate && vacationEndDate > date)
+                  ? 'Log Vacation Period'
+                  : existingEntry
+                  ? 'Save and Update Entry'
+                  : 'Log Daily Entry'
+              }</span>
             </button>
           </form>
         </div>

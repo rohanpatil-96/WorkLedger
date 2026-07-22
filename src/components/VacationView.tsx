@@ -21,7 +21,7 @@ import {
   Info,
   Sliders,
   Sparkles,
-  Palmtree,
+  TreePalm,
   HelpCircle
 } from 'lucide-react';
 import {
@@ -121,7 +121,12 @@ export default function VacationView({
   onNavigateToSettings
 }: VacationViewProps) {
   const today = useMemo(() => new Date(), []);
-  const todayStr = useMemo(() => today.toISOString().split('T')[0], [today]);
+  const todayStr = useMemo(() => {
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }, [today]);
 
   const yearlyEntitlement = settings.vacationYearlyEntitlementDays ?? 25;
 
@@ -189,8 +194,7 @@ export default function VacationView({
     }
 
     const getEarningMonthEnds = (cycle: VacationCycle) => {
-      const startD = new Date(cycle.earningStartDate);
-      const yr = startD.getFullYear();
+      const yr = parseInt(cycle.earningStartDate.split('-')[0], 10);
       const nextYr = yr + 1;
       const isLeap = (nextYr % 4 === 0 && nextYr % 100 !== 0) || (nextYr % 400 === 0);
       return [
@@ -212,14 +216,14 @@ export default function VacationView({
     const expiringEarningMonthEnds = getEarningMonthEnds(expiringCycle);
     const newEarningMonthEnds = getEarningMonthEnds(newCycle);
 
-    const startDate = new Date(activeOverlapYear, 7, 1); // August 1
-    const endDate = new Date(activeOverlapYear, 11, 31); // December 31
+    const startDate = new Date(Date.UTC(activeOverlapYear, 7, 1)); // August 1 UTC
+    const endDate = new Date(Date.UTC(activeOverlapYear, 11, 31)); // December 31 UTC
 
-    let cur = new Date(startDate);
+    let cur = new Date(startDate.getTime());
     while (cur <= endDate) {
-      const yr = cur.getFullYear();
-      const mo = String(cur.getMonth() + 1).padStart(2, '0');
-      const dy = String(cur.getDate()).padStart(2, '0');
+      const yr = cur.getUTCFullYear();
+      const mo = String(cur.getUTCMonth() + 1).padStart(2, '0');
+      const dy = String(cur.getUTCDate()).padStart(2, '0');
       const dStr = `${yr}-${mo}-${dy}`;
 
       // Calculate earned days for expiring cycle up to dStr
@@ -267,7 +271,7 @@ export default function VacationView({
       const expiringRemaining = Math.max(0, Math.round(simBalances[expiringCycleId].remaining * 100) / 100);
       const newRemaining = Math.max(0, Math.round(simBalances[newCycleId].remaining * 100) / 100);
 
-      const formattedLabel = cur.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const formattedLabel = cur.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
       data.push({
         dateStr: dStr,
@@ -276,7 +280,7 @@ export default function VacationView({
         newCycle: dStr >= newCycle.startDate ? newRemaining : 0
       });
 
-      cur.setDate(cur.getDate() + 1);
+      cur.setUTCDate(cur.getUTCDate() + 1);
     }
 
     return data;
@@ -417,7 +421,7 @@ export default function VacationView({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5">
-              <Palmtree className="w-4 h-4 text-emerald-600" />
+              <TreePalm className="w-4 h-4 text-emerald-600" />
               Vacation Balance Timeline & Year-End Overlap
             </h3>
             <p className="text-xs text-slate-400 leading-normal font-medium">
@@ -673,15 +677,14 @@ export default function VacationView({
                   statusLabel = 'Current Active';
                   statusClass = 'bg-brand-blue/10 text-brand-blue border-brand-blue/20';
                 } else {
-                  const startD = new Date(cycle.startDate);
-                  if (startD > today) {
+                  if (cycle.startDate > todayStr) {
                     statusLabel = 'Upcoming';
                     statusClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
                   }
                 }
 
-                const startYear = new Date(cycle.earningStartDate).getFullYear();
-                const endYear = new Date(cycle.earningEndDate).getFullYear();
+                const startYear = parseInt(cycle.earningStartDate.split('-')[0], 10);
+                const endYear = parseInt(cycle.earningEndDate.split('-')[0], 10);
 
                 return (
                   <tr

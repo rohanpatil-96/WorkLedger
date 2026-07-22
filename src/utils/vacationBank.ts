@@ -56,7 +56,10 @@ export function isDateInCycle(dateStr: string, cycle: VacationCycle): boolean {
 export function calculateVacationBalances(
   entries: DayEntry[],
   cycles: VacationCycle[],
-  todayStr: string = new Date().toISOString().split('T')[0]
+  todayStr: string = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })()
 ): Record<string, { used: number; remaining: number; lost: number; isExpired: boolean }> {
   const balances: Record<string, { used: number; remaining: number; lost: number; isExpired: boolean }> = {};
 

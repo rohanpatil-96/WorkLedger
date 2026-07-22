@@ -5,6 +5,8 @@
 
 import React, { useState, useEffect, useId } from 'react';
 import { Preferences } from '@capacitor/preferences';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { DayEntry, WorkCategory, UserSettings } from './types';
 import { generateSeedData } from './utils/calculations';
 import { getDanishHolidays } from './utils/holidays';
@@ -34,7 +36,7 @@ import {
   HelpCircle,
   Briefcase,
   Sparkles,
-  Palmtree
+  TreePalm
 } from 'lucide-react';
 
 export function WorkLedgerLogo({ className = "w-5 h-5" }: { className?: string }) {
@@ -109,6 +111,18 @@ export default function App() {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'calendar' | 'entries' | 'reports' | 'vacation' | 'settings' | 'pitch'>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Programmatic Native Status Bar styling on platform launch
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.setStyle({ style: Style.Dark }).catch(err => {
+        console.warn('StatusBar style configuration error:', err);
+      });
+      StatusBar.setBackgroundColor({ color: '#2C3639' }).catch(err => {
+        console.warn('StatusBar background color configuration error:', err);
+      });
+    }
+  }, []);
 
   // Vacation Bank onboarding states
   const [showVacationOnboardingPrompt, setShowVacationOnboardingPrompt] = useState(false);
@@ -439,7 +453,7 @@ export default function App() {
     { id: 'home', label: 'Quick Entry / Home', icon: Clock },
     { id: 'dashboard', label: 'Dashboard Overview', icon: LayoutDashboard },
     { id: 'calendar', label: 'Interactive Calendar', icon: CalendarDays },
-    { id: 'vacation', label: 'Vacation Bank', icon: Palmtree },
+    { id: 'vacation', label: 'Vacation Bank', icon: TreePalm },
     { id: 'entries', label: 'Historical Working Logs', icon: FileSpreadsheet },
     { id: 'reports', label: 'Tax & Reports', icon: FileText },
     { id: 'settings', label: 'Workday Settings', icon: Sliders },

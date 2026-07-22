@@ -1377,8 +1377,8 @@ export default function SettingsView({
             </h4>
             <div className="bg-slate-50 rounded-xl border border-slate-200 divide-y divide-slate-200 overflow-hidden text-xs">
               {vacationCycles.map((cycle, idx) => {
-                const startYear = new Date(cycle.earningStartDate).getFullYear();
-                const endYear = new Date(cycle.earningEndDate).getFullYear();
+                const startYear = parseInt(cycle.earningStartDate.split('-')[0], 10);
+                const endYear = parseInt(cycle.earningEndDate.split('-')[0], 10);
                 return (
                   <div key={cycle.id} className="p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
                     <div>

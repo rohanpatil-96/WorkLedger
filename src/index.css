@@ -120,6 +120,14 @@ thead th {
   border-bottom: 2px solid #DFD7C9 !important;
 }
 
+/* Ensure native calendar picker indicator is visible and fully clickable in webkit browsers */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: block !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  background-color: transparent !important;
+}
+
 /* Print custom formats for direct high-quality PDF downloads */
 @media print {
   body, #main-application-container {

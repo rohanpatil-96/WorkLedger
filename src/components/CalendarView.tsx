@@ -49,7 +49,10 @@ export default function CalendarView({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const todayStr = formatDateISO(new Date());
+  const todayStr = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
 
   const getCompactCategoryLabel = (cat: WorkCategory) => {
     switch (cat) {
