@@ -223,8 +223,8 @@ export function generateSeedData(standardHours = 7.4): DayEntry[] {
     }
 
     let category = WorkCategory.Office;
-    let entryTime = "08:00";
-    let exitTime = "16:30";
+    let entryTime = "09:00";
+    let exitTime = "17:00";
     let breakMin = 30;
     let overriddenHours: number | undefined = undefined;
     let notes = "";

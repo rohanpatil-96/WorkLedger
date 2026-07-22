@@ -40,6 +40,7 @@ import {
 export function WorkLedgerLogo({ className = "w-5 h-5" }: { className?: string }) {
   const uniqueId = useId();
   const safeId = `logoGrad-${uniqueId.replace(/:/g, '')}`;
+  const bgId = `logoBgGrad-${uniqueId.replace(/:/g, '')}`;
   return (
     <svg 
       viewBox="0 0 24 24" 
@@ -48,30 +49,53 @@ export function WorkLedgerLogo({ className = "w-5 h-5" }: { className?: string }
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
+        {/* Premium Warm Caramel Gold Gradient for the Monogram W */}
         <linearGradient id={safeId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#A27B5B" />
-          <stop offset="100%" stopColor="#3F4E4F" />
+          <stop offset="50%" stopColor="#C49B7C" />
+          <stop offset="100%" stopColor="#856041" />
+        </linearGradient>
+        
+        {/* Deep Charcoal-Slate Gradient for the logo container */}
+        <linearGradient id={bgId} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#2C3639" />
+          <stop offset="100%" stopColor="#1E2426" />
         </linearGradient>
       </defs>
-      <path 
-        d="M12 2L2 7V17L12 22L22 17V7L12 2Z" 
-        fill={`url(#${safeId})`} 
-        className="opacity-95" 
+
+      {/* Outer Rounded Container representing the App Icon boundary */}
+      <rect 
+        x="1.5" 
+        y="1.5" 
+        width="21" 
+        height="21" 
+        rx="5" 
+        fill={`url(#${bgId})`} 
+        stroke="#A27B5B" 
+        strokeWidth="1" 
+        strokeOpacity="0.45" 
       />
+
+      {/* Geometric Monogram 'W' */}
       <path 
-        d="M8 9H16M8 13H13" 
-        stroke="white" 
-        strokeWidth="1.8" 
-        strokeLinecap="round" 
-        className="opacity-90"
-      />
-      <path 
-        d="M13.5 13.5L15.5 15.5L19.5 11" 
-        stroke="#10B981" 
+        d="M6 7.5L9.5 16.5L12 11.5L14.5 16.5L18 7.5" 
+        stroke={`url(#${safeId})`} 
         strokeWidth="2.2" 
         strokeLinecap="round" 
         strokeLinejoin="round" 
       />
+
+      {/* Sleek Clock Hand / Ledger Line */}
+      <path 
+        d="M9 13.5L15 9" 
+        stroke="#E2D4C9" 
+        strokeWidth="1.5" 
+        strokeLinecap="round" 
+        className="opacity-90"
+      />
+
+      {/* Center clock pin */}
+      <circle cx="12" cy="11.5" r="1.1" fill="#E2D4C9" />
     </svg>
   );
 }
@@ -443,10 +467,24 @@ export default function App() {
         </button>
       </div>
 
+      {/* Mobile Menu Backdrop */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+          onClick={() => setMobileMenuOpen(false)}
+          id="mobile-menu-backdrop"
+        />
+      )}
+
       {/* Navigation Sidebar Drawer */}
-      <aside className={`w-full md:w-64 bg-brand-slate flex flex-col z-20 shrink-0 print:hidden pb-[env(safe-area-inset-bottom,0px)] ${
-        mobileMenuOpen ? 'block' : 'hidden md:flex'
-      }`}>
+      <aside 
+        id="sidebar-navigation"
+        className={`
+          fixed inset-y-0 left-0 w-[280px] max-w-[85vw] bg-brand-slate flex flex-col z-50 shadow-2xl transition-transform duration-300 ease-in-out pb-[env(safe-area-inset-bottom,0px)] print:hidden
+          md:static md:w-64 md:max-w-none md:h-auto md:shadow-none md:translate-x-0 md:z-20 md:flex
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full hidden md:flex'}
+        `}
+      >
         {/* Brand identity */}
         <div className="hidden md:flex items-center gap-2.5 px-6 py-6 border-b border-slate-700/65">
           <div className="p-1.5 rounded-xl bg-slate-800 border border-slate-700/60 shadow-lg">

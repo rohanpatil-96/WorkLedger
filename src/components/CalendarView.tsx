@@ -75,8 +75,8 @@ export default function CalendarView({
   // Modal State for Quick Popup Editing
   const [editingDay, setEditingDay] = useState<{ dateStr: string; entry?: DayEntry } | null>(null);
   const [editCategory, setEditCategory] = useState<WorkCategory>(WorkCategory.Office);
-  const [editEntryTime, setEditEntryTime] = useState('08:00');
-  const [editExitTime, setEditExitTime] = useState('16:30');
+  const [editEntryTime, setEditEntryTime] = useState('09:00');
+  const [editExitTime, setEditExitTime] = useState('17:00');
   const [editBreak, setEditBreak] = useState(30);
   const [editOverride, setEditOverride] = useState('');
   const [editNotes, setEditNotes] = useState('');
@@ -233,8 +233,8 @@ export default function CalendarView({
 
     if (existing) {
       setEditCategory(existing.category);
-      setEditEntryTime(existing.entryTime || '08:00');
-      setEditExitTime(existing.exitTime || '16:30');
+      setEditEntryTime(existing.entryTime || '09:00');
+      setEditExitTime(existing.exitTime || '17:00');
       setEditBreak(existing.breakMinutes ?? 30);
       setEditOverride(existing.overriddenTotalHours !== undefined ? String(existing.overriddenTotalHours) : '');
       setEditNotes(existing.notes || '');
@@ -244,8 +244,8 @@ export default function CalendarView({
     } else {
       const isHoli = holidaysMap.has(dateStr);
       setEditCategory(isWeekend(dateStr) ? (isHoli ? WorkCategory.Holiday : WorkCategory.Vacation) : (isHoli ? WorkCategory.Holiday : WorkCategory.Office));
-      setEditEntryTime('08:00');
-      setEditExitTime('16:30');
+      setEditEntryTime('09:00');
+      setEditExitTime('17:00');
       setEditBreak(30);
       setEditOverride('');
       setEditNotes(isHoli ? `Public Holiday: ${holidaysMap.get(dateStr)}` : '');

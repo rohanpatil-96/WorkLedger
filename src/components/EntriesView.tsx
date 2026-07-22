@@ -50,8 +50,8 @@ export default function EntriesView({
   // Edit State
   const [editingEntry, setEditingEntry] = useState<DayEntry | null>(null);
   const [editCategory, setEditCategory] = useState<WorkCategory>(WorkCategory.Office);
-  const [editEntryTime, setEditEntryTime] = useState('08:00');
-  const [editExitTime, setEditExitTime] = useState('16:30');
+  const [editEntryTime, setEditEntryTime] = useState('09:00');
+  const [editExitTime, setEditExitTime] = useState('17:00');
   const [editBreak, setEditBreak] = useState(30);
   const [editOverride, setEditOverride] = useState('');
   const [editNotes, setEditNotes] = useState('');
@@ -130,8 +130,8 @@ export default function EntriesView({
   const handleEditClick = (entry: DayEntry) => {
     setEditingEntry(entry);
     setEditCategory(entry.category);
-    setEditEntryTime(entry.entryTime || '08:00');
-    setEditExitTime(entry.exitTime || '16:30');
+    setEditEntryTime(entry.entryTime || '09:00');
+    setEditExitTime(entry.exitTime || '17:00');
     setEditBreak(entry.breakMinutes ?? 30);
     setEditOverride(entry.overriddenTotalHours !== undefined ? String(entry.overriddenTotalHours) : '');
     setEditNotes(entry.notes || '');

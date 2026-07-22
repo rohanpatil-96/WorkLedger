@@ -191,7 +191,7 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/5 rounded-full blur-xl pointer-events-none" />
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1 cursor-help" title="Negative overtime on Unpaid Holiday days reflects unworked standard hours per SKAT rules.">
-              Overtime Balance <span className="text-slate-400 text-[10px]">ⓘ</span>
+              Overtime Balance ({selectedYear} YTD) <span className="text-slate-400 text-[10px]">ⓘ</span>
             </span>
             <span className="bg-brand-blue/10 text-brand-blue p-1.5 rounded-lg">
               <Clock className="w-4 h-4" />
@@ -199,16 +199,16 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
           </div>
           <div>
             <span className={`text-2xl font-extrabold font-mono tracking-tight block ${
-              cumulativeOvertime >= 0 ? 'text-brand-green' : 'text-rose-500'
+              yearOvertimeSum >= 0 ? 'text-brand-green' : 'text-rose-500'
             }`}>
-              {cumulativeOvertime >= 0 ? `+${cumulativeOvertime.toFixed(2)}` : `${cumulativeOvertime.toFixed(2)}`} hrs
+              {yearOvertimeSum >= 0 ? `+${yearOvertimeSum.toFixed(2)}` : `${yearOvertimeSum.toFixed(2)}`} hrs
             </span>
-            <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Total Cumulative Balance</span>
+            <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Total Cumulative Balance ({selectedYear})</span>
           </div>
           <div className="bg-slate-50/60 p-2 rounded-xl text-[11px] text-slate-600 flex justify-between font-medium">
-            <span>YTD ({selectedYear}):</span>
-            <span className={`font-bold font-mono ${yearOvertimeSum >= 0 ? 'text-teal-600' : 'text-rose-650'}`}>
-              {yearOvertimeSum >= 0 ? `+${yearOvertimeSum.toFixed(2)}` : yearOvertimeSum.toFixed(2)} hrs
+            <span>All-time Overtime:</span>
+            <span className="font-bold font-mono text-slate-600">
+              {cumulativeOvertime >= 0 ? `+${cumulativeOvertime.toFixed(2)}` : cumulativeOvertime.toFixed(2)} hrs
             </span>
           </div>
           <div className="border-t border-slate-100 pt-2 flex justify-between text-[11px] text-slate-505">
@@ -225,7 +225,7 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/5 rounded-full blur-xl pointer-events-none" />
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              In Office Days
+              In Office Days ({selectedYear} YTD)
               <br />
               (Tax Deductible)
             </span>
@@ -235,10 +235,10 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
           </div>
           <div>
             <span className="text-2xl font-extrabold font-mono text-brand-slate tracking-tight block">
-              {monthOfficeDaysForDeduction} <span className="text-xs font-normal text-slate-505">days this month</span>
+              {yearOfficeDaysForDeduction} <span className="text-xs font-normal text-slate-500">days</span>
             </span>
             <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mt-1">
-              YTD Office Days: <span className="text-brand-blue font-mono font-bold">{yearOfficeDaysForDeduction} days</span>
+              This Month: <span className="text-brand-blue font-mono font-bold">{monthOfficeDaysForDeduction} days</span>
             </span>
           </div>
           <div className="border-t border-slate-100 pt-2 text-[10px] text-slate-505 flex items-center gap-1 leading-tight text-slate-500">
@@ -250,17 +250,17 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 relative overflow-hidden" id="wfh-tax-documentation-card">
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/5 rounded-full blur-xl pointer-events-none" />
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">WFH Days</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">WFH Days ({selectedYear} YTD)</span>
             <span className="bg-brand-blue/10 text-brand-blue p-1.5 rounded-lg">
               <HomeIcon className="w-4 h-4" />
             </span>
           </div>
           <div>
             <span className="text-2xl font-extrabold font-mono text-brand-slate tracking-tight block">
-              {mWFH} <span className="text-xs font-normal text-slate-505">days this month</span>
+              {yWFH} <span className="text-xs font-normal text-slate-500">days</span>
             </span>
             <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mt-1">
-              Year-to-date total: <span className="text-brand-blue font-mono font-bold">{yWFH} days</span>
+              This Month: <span className="text-brand-blue font-mono font-bold">{mWFH} days</span>
             </span>
           </div>
           <p className="border-t border-slate-100 pt-2 text-[10px] text-slate-505 leading-normal flex items-center gap-1 text-slate-500">
@@ -272,18 +272,18 @@ export default function DashboardView({ entries, settings }: DashboardViewProps)
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 relative overflow-hidden" id="skat-commute-refund-card">
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand-peach/5 rounded-full blur-xl pointer-events-none" />
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Est Commute Deduction</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Est Commute Deduction ({selectedYear} YTD)</span>
             <span className="bg-amber-500/10 text-amber-600 p-1.5 rounded-lg">
               <Coins className="w-4 h-4" />
             </span>
           </div>
           <div>
             <span className="text-2xl font-extrabold font-mono text-slate-800 tracking-tight block">
-              {monthEstimatedDeduction.toFixed(2)}{' '}
+              {yearEstimatedDeduction.toFixed(2)}{' '}
               <span className="text-xs text-slate-505 font-sans font-semibold">DKK</span>
             </span>
-            <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-              YTD Estimate: <span className="text-amber-600 font-mono font-semibold">{yearEstimatedDeduction.toFixed(2)} DKK</span>
+            <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mt-1">
+              This Month Estimate: <span className="text-amber-600 font-mono font-semibold">{monthEstimatedDeduction.toFixed(2)} DKK</span>
             </span>
           </div>
           <div className="border-t border-slate-100 pt-2 text-[9px] text-slate-505 flex flex-col gap-0.5 leading-tight">

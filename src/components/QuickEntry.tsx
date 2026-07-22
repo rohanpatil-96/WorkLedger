@@ -74,8 +74,8 @@ export default function QuickEntry({
 
   const [date, setDate] = useState<string>(todayStr);
   const [category, setCategory] = useState<WorkCategory>(WorkCategory.Office);
-  const [entryTime, setEntryTime] = useState<string>('08:00');
-  const [exitTime, setExitTime] = useState<string>('16:30');
+  const [entryTime, setEntryTime] = useState<string>('09:00');
+  const [exitTime, setExitTime] = useState<string>('17:00');
   const [breakMinutes, setBreakMinutes] = useState<number>(30);
   const [location, setLocation] = useState<string>('');
   const [overriddenHours, setOverriddenHours] = useState<string>('');
@@ -113,8 +113,8 @@ export default function QuickEntry({
   useEffect(() => {
     if (existingEntry) {
       setCategory(existingEntry.category);
-      setEntryTime(existingEntry.entryTime || '08:00');
-      setExitTime(existingEntry.exitTime || '16:30');
+      setEntryTime(existingEntry.entryTime || '09:00');
+      setExitTime(existingEntry.exitTime || '17:00');
       setBreakMinutes(existingEntry.breakMinutes ?? 30);
       setLocation(existingEntry.location || '');
       setOverriddenHours(existingEntry.overriddenTotalHours !== undefined ? String(existingEntry.overriddenTotalHours) : '');
@@ -212,7 +212,7 @@ export default function QuickEntry({
 
       // Recalculate working metric properties based on source values
       const calcHours = (prev.category === WorkCategory.Office || prev.category === WorkCategory.OtherOffice || prev.category === WorkCategory.WFH)
-        ? calculateHours(prev.entryTime || '08:00', prev.exitTime || '16:30', prev.breakMinutes ?? 30)
+        ? calculateHours(prev.entryTime || '09:00', prev.exitTime || '17:00', prev.breakMinutes ?? 30)
         : (prev.category === WorkCategory.UnpaidFerie ? 0 : settings.standardWorkdayHours);
 
       const finalHrs = prev.overriddenTotalHours !== undefined ? prev.overriddenTotalHours : calcHours;
@@ -257,8 +257,8 @@ export default function QuickEntry({
       .sort((a, b) => b.date.localeCompare(a.date))[0];
 
     const targetCategory = WorkCategory.Office;
-    const targetEntry = lastOffice?.entryTime || '08:00';
-    const targetExit = lastOffice?.exitTime || '16:30';
+    const targetEntry = lastOffice?.entryTime || '09:00';
+    const targetExit = lastOffice?.exitTime || '17:00';
     const targetBreak = lastOffice?.breakMinutes ?? 30;
     const targetNotes = 'Logged standard office hours';
 
@@ -322,7 +322,7 @@ export default function QuickEntry({
       const isHoliday = settings.holidays.find((h) => h.date === tempDateStr);
       const cat = isHoliday ? WorkCategory.Holiday : WorkCategory.Office;
 
-      const calcH = cat === WorkCategory.Holiday ? settings.standardWorkdayHours : calculateHours('08:00', '16:30', 30);
+      const calcH = cat === WorkCategory.Holiday ? settings.standardWorkdayHours : calculateHours('09:00', '17:00', 30);
       const ot = calculateDayOvertime(cat, calcH, false, settings.standardWorkdayHours);
 
       weekEntries.push({
@@ -332,8 +332,8 @@ export default function QuickEntry({
         month: d.getUTCMonth() + 1,
         year: d.getUTCFullYear(),
         category: cat,
-        entryTime: cat === WorkCategory.Office ? '08:00' : undefined,
-        exitTime: cat === WorkCategory.Office ? '16:30' : undefined,
+        entryTime: cat === WorkCategory.Office ? '09:00' : undefined,
+        exitTime: cat === WorkCategory.Office ? '17:00' : undefined,
         breakMinutes: cat === WorkCategory.Office ? 30 : undefined,
         calculatedHours: calcH,
         finalCountedHours: calcH,
@@ -373,10 +373,9 @@ export default function QuickEntry({
 
       if (!isWk) {
         let calcH = 0;
-        if (bulkCategory === WorkCategory.Office || bulkCategory === WorkCategory.OtherOffice) {
-          calcH = calculateHours('08:00', '16:30', 30);
+        if (bulkCategory === WorkCategory.Office || bulkCategory === WorkCategory.OtherOffice || bulkCategory === WorkCategory.WFH) {
+          calcH = calculateHours('09:00', '17:00', 30);
         } else if (
-          bulkCategory === WorkCategory.WFH ||
           bulkCategory === WorkCategory.Holiday ||
           bulkCategory === WorkCategory.Vacation ||
           bulkCategory === WorkCategory.Sick
@@ -395,9 +394,9 @@ export default function QuickEntry({
           month: current.getUTCMonth() + 1,
           year: current.getUTCFullYear(),
           category: bulkCategory,
-          entryTime: (bulkCategory === WorkCategory.Office) ? '08:00' : undefined,
-          exitTime: (bulkCategory === WorkCategory.Office) ? '16:30' : undefined,
-          breakMinutes: (bulkCategory === WorkCategory.Office) ? 30 : undefined,
+          entryTime: (bulkCategory === WorkCategory.Office || bulkCategory === WorkCategory.WFH) ? '09:00' : undefined,
+          exitTime: (bulkCategory === WorkCategory.Office || bulkCategory === WorkCategory.WFH) ? '17:00' : undefined,
+          breakMinutes: (bulkCategory === WorkCategory.Office || bulkCategory === WorkCategory.WFH) ? 30 : undefined,
           calculatedHours: calcH,
           finalCountedHours: calcH,
           overtime: ot,
@@ -879,10 +878,10 @@ export default function QuickEntry({
               >
                 <div className="space-y-0.5">
                   <span className="font-semibold block text-slate-800">Default Office Hours</span>
-                  <span className="text-[9px] text-slate-400 block font-normal">Fill 08:00 - 16:30 office day</span>
+                  <span className="text-[9px] text-slate-400 block font-normal">Fill 09:00 - 17:00 office day</span>
                 </div>
                 <span className="text-emerald-700 text-[9px] bg-emerald-500/10 px-2 py-0.5 rounded font-mono font-bold">
-                  08:00
+                  09:00
                 </span>
               </button>
 
