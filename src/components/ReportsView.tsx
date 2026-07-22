@@ -4,6 +4,9 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { DayEntry, WorkCategory, UserSettings, getCategoryDisplayName } from '../types';
 import { calculateCommuteDeduction, isWeekend, getCommuteDistance } from '../utils/calculations';
 import {
@@ -126,14 +129,40 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
       csvContent += `${e.date},${e.weekday},${e.weekNumber},${e.month},${e.year},"${e.category}",${e.entryTime || ''},${e.exitTime || ''},${e.breakMinutes ?? ''},${e.calculatedHours},${e.finalCountedHours},${e.overtime},"${notesClean}"\n`;
     });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `danish_workdays_report_${reportType}_${selectedYear}${reportType === 'monthly' ? '_' + selectedMonth : ''}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const filename = `danish_workdays_report_${reportType}_${selectedYear}${reportType === 'monthly' ? '_' + selectedMonth : ''}.csv`;
+
+    if (Capacitor.isNativePlatform()) {
+      Filesystem.writeFile({
+        path: filename,
+        data: csvContent,
+        directory: Directory.Cache,
+        encoding: Encoding.UTF8
+      }).then((writeResult) => {
+        Share.share({
+          title: 'WorkLedger CSV Report',
+          text: `Danish workdays and commute logs for ${reportType === 'monthly' ? monthsNames[selectedMonth - 1] : ''} ${selectedYear}`,
+          url: writeResult.uri,
+          dialogTitle: 'Save or Share CSV Report'
+        });
+      }).catch((nativeErr) => {
+        console.error('Capacitor CSV share failed, falling back to browser download:', nativeErr);
+        triggerBrowserDownload();
+      });
+    } else {
+      triggerBrowserDownload();
+    }
+
+    function triggerBrowserDownload() {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
   };
 
   // --- TAB-DELIMITED (GOOGLE SHEETS COMPATIBLE) ---
@@ -542,7 +571,30 @@ export default function ReportsView({ entries, settings }: ReportsViewProps) {
       };
 
       const filename = `danish_workdays_report_${reportType}_${selectedYear}${reportType === 'monthly' ? '_' + selectedMonth : ''}.pdf`;
-      pdfMake.createPdf(docDefinition).download(filename);
+      
+      if (Capacitor.isNativePlatform()) {
+        (pdfMake.createPdf(docDefinition) as any).getBase64(async (base64Data: string) => {
+          try {
+            const writeResult = await Filesystem.writeFile({
+              path: filename,
+              data: base64Data,
+              directory: Directory.Cache
+            });
+
+            await Share.share({
+              title: 'WorkLedger PDF Report',
+              text: `Danish tax & commute statement for ${reportType === 'monthly' ? monthsNames[selectedMonth - 1] : ''} ${selectedYear}`,
+              url: writeResult.uri,
+              dialogTitle: 'Save or Share PDF Report'
+            });
+          } catch (nativeErr) {
+            console.error('Capacitor PDF share failed, falling back to browser download:', nativeErr);
+            pdfMake.createPdf(docDefinition).download(filename);
+          }
+        });
+      } else {
+        pdfMake.createPdf(docDefinition).download(filename);
+      }
     } catch (e) {
       console.error('PDF generation error:', e);
     } finally {
