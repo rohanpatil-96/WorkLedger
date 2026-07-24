@@ -42,6 +42,40 @@ body {
   font-family: "Plus Jakarta Sans", "Inter", sans-serif !important;
 }
 
+/* Custom premium scrollbar for macOS/Windows/Linux browsers & Electron wrappers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(44, 54, 57, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(44, 54, 57, 0.4);
+}
+
+/* Ensure all buttons, interactive tabs, select dropdowns, and checkboxes have cursor-pointer */
+button, select, input[type="checkbox"], input[type="radio"], [role="button"] {
+  cursor: pointer !important;
+}
+
+/* Mobile & Native iOS/Android specific safe layout protections to prevent viewport rubber-banding */
+@media (max-width: 767px) {
+  html, body {
+    overflow: hidden !important;
+    height: 100% !important;
+    position: fixed !important;
+    width: 100% !important;
+    -webkit-overflow-scrolling: auto;
+  }
+}
 
 /* Base application container with the elegant Au Lait canvas */
 #main-application-container {
@@ -139,4 +173,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     box-shadow: none !important;
     border: 1px solid #DFD7C9 !important;
   }
+}
+
+/* Ensure the React mount point fills the container on mobile */
+#root {
+  height: 100%;
 }

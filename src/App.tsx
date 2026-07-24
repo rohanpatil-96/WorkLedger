@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useRef } from 'react';
 import { Preferences } from '@capacitor/preferences';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { App as CapApp } from '@capacitor/app';
 import { DayEntry, WorkCategory, UserSettings } from './types';
 import { generateSeedData } from './utils/calculations';
 import { getDanishHolidays } from './utils/holidays';
@@ -111,6 +112,29 @@ export default function App() {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'calendar' | 'entries' | 'reports' | 'vacation' | 'settings' | 'pitch'>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
+
+  // Refs to avoid rebuilding listeners with stale closures
+  const activeTabRef = useRef(activeTab);
+  const navigationHistoryRef = useRef(navigationHistory);
+
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  useEffect(() => {
+    navigationHistoryRef.current = navigationHistory;
+  }, [navigationHistory]);
+
+  const navigateToTab = (nextTab: 'home' | 'dashboard' | 'calendar' | 'entries' | 'reports' | 'vacation' | 'settings' | 'pitch') => {
+    if (nextTab === activeTab) return;
+    setNavigationHistory(prev => {
+      const last = prev[prev.length - 1];
+      if (last === activeTab) return prev;
+      return [...prev, activeTab];
+    });
+    setActiveTab(nextTab);
+  };
   
   // Programmatic Native Status Bar styling on platform launch
   useEffect(() => {
@@ -122,6 +146,41 @@ export default function App() {
         console.warn('StatusBar background color configuration error:', err);
       });
     }
+  }, []);
+
+  // Intercept native hardware back button (Android)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let isMounted = true;
+    const backButtonListenerPromise = CapApp.addListener('backButton', () => {
+      if (!isMounted) return;
+      const history = navigationHistoryRef.current;
+      const currentTab = activeTabRef.current;
+
+      if (history.length > 0) {
+        // Go back in local view history
+        const nextHistory = [...history];
+        const previousTab = nextHistory.pop();
+        setNavigationHistory(nextHistory);
+        if (previousTab) {
+          setActiveTab(previousTab as any);
+        }
+      } else if (currentTab !== 'home') {
+        // Fallback to home/quick entry page
+        setActiveTab('home');
+      } else {
+        // Already on home, safe to exit/minimize native app
+        CapApp.minimizeApp();
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      backButtonListenerPromise.then(listener => {
+        listener.remove();
+      });
+    };
   }, []);
 
   // Vacation Bank onboarding states
@@ -367,6 +426,7 @@ export default function App() {
     setSettings(nextSettings);
     setEntries(synthetic2026);
     setActiveTab('home');
+    setNavigationHistory([]);
 
     await Preferences.set({ key: SETTINGS_CACHE_KEY, value: JSON.stringify(nextSettings) });
     await Preferences.set({ key: ENTRIES_CACHE_KEY, value: JSON.stringify(synthetic2026) });
@@ -429,7 +489,7 @@ export default function App() {
             entries={entries}
             settings={settings}
             onUpdateSettings={handleUpdateSettings}
-            onNavigateToSettings={() => setActiveTab('settings')}
+            onNavigateToSettings={() => navigateToTab('settings')}
           />
         );
       case 'settings':
@@ -445,7 +505,7 @@ export default function App() {
           />
         );
       case 'pitch':
-        return <PitchView onNavigate={(tab) => setActiveTab(tab)} />;
+        return <PitchView onNavigate={(tab) => navigateToTab(tab)} />;
     }
   };
 
@@ -463,7 +523,7 @@ export default function App() {
   const currentSectionLabel = menuItems.find(item => item.id === activeTab)?.label || 'Quick Entry / Home';
 
   return (
-    <div className="min-h-screen bg-brand-bg text-slate-800 flex flex-col md:flex-row font-sans selection:bg-brand-blue selection:text-white" id="main-application-container">
+    <div className="h-[100dvh] md:h-auto md:min-h-screen overflow-hidden md:overflow-visible bg-brand-bg text-slate-800 flex flex-col md:flex-row font-sans selection:bg-brand-blue selection:text-white" id="main-application-container">
       
       {/* Mobile Top Header (hidden on desktop) */}
       <div className="md:hidden bg-brand-slate border-b border-brand-slate pt-[calc(1rem+env(safe-area-inset-top,0px))] pb-4 px-4 flex justify-between items-center z-30 print:hidden shrink-0">
@@ -494,7 +554,7 @@ export default function App() {
       <aside 
         id="sidebar-navigation"
         className={`
-          fixed inset-y-0 left-0 w-[280px] max-w-[85vw] bg-brand-slate flex flex-col z-50 shadow-2xl transition-transform duration-300 ease-in-out pb-[env(safe-area-inset-bottom,0px)] print:hidden
+          fixed inset-y-0 left-0 w-[280px] max-w-[85vw] bg-brand-slate flex flex-col z-50 shadow-2xl transition-transform duration-300 ease-in-out pt-[calc(1rem+env(safe-area-inset-top,0px))] pb-[env(safe-area-inset-bottom,0px)] md:pt-0 md:pb-0 print:hidden
           md:static md:w-64 md:max-w-none md:h-auto md:shadow-none md:translate-x-0 md:z-20 md:flex
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full hidden md:flex'}
         `}
@@ -519,7 +579,7 @@ export default function App() {
               <button
                 key={item.id}
                 onClick={() => {
-                  setActiveTab(item.id);
+                  navigateToTab(item.id);
                   setMobileMenuOpen(false);
                 }}
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-semibold tracking-wide transition-all ${
