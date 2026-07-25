@@ -1,0 +1,48 @@
+name: Build & Release Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers when you push a tag like v1.0.0
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-size: 'large'
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install web dependencies
+        run: npm install
+
+      - name: Build frontend React app
+        run: npm run build
+
+      - name: Build Tauri Desktop App
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__ # Will be replaced with package.json version automatically
+          releaseName: 'WorkLedger v__VERSION__'
+          releaseBody: 'WorkLedger Desktop App Release'
+          releaseDraft: true
+          prerelease: false

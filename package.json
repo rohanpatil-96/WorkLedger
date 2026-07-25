@@ -3,13 +3,25 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "allowScripts": [
+    "electron",
+    "lzma-native"
+  ],
+  "lavamoat": {
+    "allowScripts": {
+      "electron": true,
+      "lzma-native": true
+    }
+  },
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "assets:generate": "capacitor-assets generate"
+    "assets:generate": "capacitor-assets generate",
+    "patch-electron": "node patch-electron.js",
+    "patch-tauri": "node patch-tauri.js"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
