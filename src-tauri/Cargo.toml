@@ -1,0 +1,19 @@
+[package]
+name = "workledger"
+version = "0.0.0"
+description = "WorkLedger Desktop App"
+authors = ["rohanpatil-96"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5.0", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.5.0", features = ["shell-open"] }
+
+[features]
+# This feature is used for production builds or when `devUrl` is explicitly provided
+# DO NOT remove this
+custom-protocol = ["tauri/custom-protocol"]
